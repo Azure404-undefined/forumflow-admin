@@ -188,11 +188,11 @@ const local: App.I18n.Schema = {
     // function_request: 'Request',
     // 'function_toggle-auth': 'Toggle Auth',
     // 'function_super-page': 'Super Admin Visible',
-    manage: 'System Manage',
-    manage_user: 'User Manage',
-    'manage_user-detail': 'User Detail',
-    manage_role: 'Role Manage',
-    manage_menu: 'Menu Manage',
+    // manage: 'System Manage',
+    // manage_user: 'User Manage',
+    // 'manage_user-detail': 'User Detail',
+    // manage_role: 'Role Manage',
+    // manage_menu: 'Menu Manage',
     'multi-menu': 'Multi Menu',
     'multi-menu_first': 'Menu One',
     'multi-menu_first_child': 'Menu One Child',
@@ -227,7 +227,8 @@ const local: App.I18n.Schema = {
     // plugin_typeit: 'Typeit',
     // plugin_tables: 'Tables',
     // plugin_tables_vtable: 'VTable',
-    user: 'User Manage'
+    user: 'User Manage',
+    role: 'Role Manage'
   },
   page: {
     login: {

@@ -324,7 +324,7 @@ onMounted(() => {
       <ElButton @click="resetSearch">重置</ElButton>
       <div class="actions-space"></div>
       <ElButton type="primary" @click="handleCreate()">新增用户</ElButton>
-      <ElButton type="danger" plain @click="handleSelectedRowsEdit">批量操作</ElButton>
+      <ElButton type="primary" @click="handleSelectedRowsEdit">批量操作</ElButton>
     </div>
 
     <ElCard class="card-wrapper">

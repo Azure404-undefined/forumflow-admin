@@ -44,6 +44,10 @@ declare module "@elegant-router/types" {
     "multi-menu_second": "/multi-menu/second";
     "multi-menu_second_child": "/multi-menu/second/child";
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
+    "post": "/post";
+    "post_post-comment": "/post/post-comment";
+    "post_post-forums": "/post/post-forums";
+    "post_post-list": "/post/post-list";
     "role": "/role";
     "user": "/user";
     "user-center": "/user-center";
@@ -100,6 +104,7 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "multi-menu"
+    | "post"
     | "role"
     | "user"
     | "user-center"
@@ -130,6 +135,9 @@ declare module "@elegant-router/types" {
     | "home"
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
+    | "post_post-comment"
+    | "post_post-forums"
+    | "post_post-list"
     | "role"
     | "user-center"
     | "user"

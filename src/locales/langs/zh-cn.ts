@@ -228,7 +228,11 @@ const local: App.I18n.Schema = {
     // plugin_tables: '表格',
     // plugin_tables_vtable: 'VTable',
     user: '用户管理',
-    role: '角色管理'
+    role: '角色管理',
+    post: '帖子管理',
+    'post_post-list': '帖子列表',
+    'post_post-forums': '板块管理',
+    'post_post-comment': '评论管理'
   },
   page: {
     login: {

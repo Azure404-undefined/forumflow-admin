@@ -149,6 +149,44 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'post',
+    path: '/post',
+    component: 'layout.base',
+    meta: {
+      title: 'post',
+      i18nKey: 'route.post'
+    },
+    children: [
+      {
+        name: 'post_post-comment',
+        path: '/post/post-comment',
+        component: 'view.post_post-comment',
+        meta: {
+          title: 'post_post-comment',
+          i18nKey: 'route.post_post-comment'
+        }
+      },
+      {
+        name: 'post_post-forums',
+        path: '/post/post-forums',
+        component: 'view.post_post-forums',
+        meta: {
+          title: 'post_post-forums',
+          i18nKey: 'route.post_post-forums'
+        }
+      },
+      {
+        name: 'post_post-list',
+        path: '/post/post-list',
+        component: 'view.post_post-list',
+        meta: {
+          title: 'post_post-list',
+          i18nKey: 'route.post_post-list'
+        }
+      }
+    ]
+  },
+  {
     name: 'role',
     path: '/role',
     component: 'layout.base$view.role',

@@ -116,6 +116,7 @@ const getUserList = async () => {
     });
     users.value = res.data!.list;
     total.value = res.data!.total;
+    pageSize.value = res.data!.pageSize;
   } catch {
     ElMessage.error('获取用户列表失败');
   } finally {
@@ -124,14 +125,19 @@ const getUserList = async () => {
   }
 };
 
-// 监听分页、每页条数、搜索条件变化
+// 监听分页、搜索条件变化（pageSize 单独监听以重置页码）
 watch(
-  [current, pageSize, () => searchForm],
+  [current, () => searchForm],
   () => {
     getUserList();
   },
   { deep: true }
 );
+
+// 当每页条数改变时重置到第一页（current = 1），由 current 的 watcher 触发列表刷新
+watch(pageSize, () => {
+  current.value = 1;
+});
 
 function resetSearch() {
   searchForm.username = '';
@@ -295,15 +301,6 @@ async function batchDelete() {
   }
 }
 
-function onCurrentChange(page: number) {
-  current.value = page;
-}
-
-function onSizeChange(size: number) {
-  pageSize.value = size;
-  current.value = 1;
-}
-
 onMounted(() => {
   getUserList();
 });
@@ -365,13 +362,7 @@ onMounted(() => {
         </ElTableColumn>
       </ElTable>
       <div class="pagination-wrap">
-        <CustomPagination
-          :total="total"
-          :current="current"
-          :page-size="pageSize"
-          @current-change="onCurrentChange"
-          @size-change="onSizeChange"
-        />
+        <CustomPagination v-model:current="current" v-model:page-size="pageSize" :total="total" />
       </div>
     </ElCard>
     <div

@@ -228,7 +228,11 @@ const local: App.I18n.Schema = {
     // plugin_tables: 'Tables',
     // plugin_tables_vtable: 'VTable',
     user: 'User Manage',
-    role: 'Role Manage'
+    role: 'Role Manage',
+    post: 'Post Manage',
+    'post_post-list': 'Post List',
+    'post_post-forums': 'Post Forums',
+    'post_post-comment': 'Post Comment'
   },
   page: {
     login: {

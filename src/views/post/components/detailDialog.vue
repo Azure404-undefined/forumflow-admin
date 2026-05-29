@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { auditPosts, deletePost, editPost, fetchPostDetail, setPostEssence, setPostTop } from '@/service/api/post';
+import { deleteComment, fetchCommentList } from '@/service/api/comment';
 import SafeContent from '@/components/common/safeContend.vue';
 
 const props = defineProps<{
@@ -11,6 +12,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void;
+  (e: 'updated'): void;
 }>();
 
 const visible = computed({
@@ -24,15 +26,22 @@ const loading = ref(false);
 const post = ref<Api.Post.PostInfo | null>(null);
 const avatarUrl = ref<string | undefined>(undefined);
 const contentEdit = ref('');
+const comments = ref<Api.Comment.CommentInfo[] | undefined>();
 
 async function loadDetail() {
   if (!props.postId) return;
   loading.value = true;
   try {
-    const res = await fetchPostDetail(props.postId as string);
-    post.value = res.data;
-    avatarUrl.value = post.value?.authorAvatar || undefined;
-    contentEdit.value = post.value?.content || '';
+    await fetchPostDetail(props.postId).then(res => {
+      post.value = res.data;
+      avatarUrl.value = post.value?.authorAvatar || undefined;
+      contentEdit.value = post.value?.content || '';
+      // console.log('帖子详情', post.value);
+    });
+    await fetchCommentList({ pageNum: 1, pageSize: 10, postId: props.postId }).then(res => {
+      comments.value = res.data?.list;
+      // console.log('评论列表', comments.value);
+    });
   } catch {
     ElMessage.error('获取详情失败');
   } finally {
@@ -40,19 +49,23 @@ async function loadDetail() {
   }
 }
 
-watch(
-  () => props.postId,
-  v => {
-    if (v && visible.value) loadDetail();
+async function handleCommentChanged() {
+  await loadDetail();
+  emit('updated');
+}
+
+// 合并监听，避免在 postId 与 modelValue 同时变化时重复请求
+watch([() => props.modelValue, () => props.postId], ([valVisible, valPostId], [oldVisible, oldPostId]) => {
+  if (valVisible && valPostId) {
+    // 仅在对话框刚打开或 postId 变更时加载，防止重复请求
+    if (!oldVisible || oldPostId !== valPostId) {
+      loadDetail();
+    }
   }
-);
-watch(
-  () => props.modelValue,
-  v => {
-    if (v && props.postId) loadDetail();
-    if (!v) post.value = null;
+  if (!valVisible) {
+    post.value = null;
   }
-);
+});
 
 function close() {
   visible.value = false;
@@ -69,6 +82,7 @@ async function toggleTop() {
     await setPostTop(post.value.id, newTop);
     ElMessage.success(newTop === 1 ? '已置顶' : '已取消置顶');
     await loadDetail();
+    emit('updated');
   } catch {
     ElMessage.error('操作失败');
   }
@@ -81,6 +95,7 @@ async function toggleEssence() {
     await setPostEssence(post.value.id, newEssence);
     ElMessage.success(newEssence === 1 ? '已加精' : '已取消加精');
     await loadDetail();
+    emit('updated');
   } catch {
     ElMessage.error('操作失败');
   }
@@ -93,6 +108,7 @@ async function doAudit(pass: boolean) {
     await auditPosts({ ids: [post.value.id], status });
     ElMessage.success(pass ? '审核通过' : '已驳回');
     await loadDetail();
+    emit('updated');
   } catch {
     ElMessage.error('操作失败');
   }
@@ -103,8 +119,10 @@ async function doDelete() {
   try {
     await ElMessageBox.confirm('确认删除该帖子？', '提示', { type: 'warning' });
     await deletePost(post.value.id);
+    await loadDetail();
     ElMessage.success('删除成功');
     close();
+    emit('updated');
   } catch {
     // cancel or fail
   }
@@ -125,44 +143,33 @@ async function savePost() {
     await editPost(post.value.id, payload);
     ElMessage.success('保存成功');
     close();
+    emit('updated');
   } catch {
     ElMessage.error('保存失败');
   }
 }
 
-// 示例评论
-const comments = ref([
-  {
-    id: 'c1',
-    authorName: '评论者A',
-    authorAvatar: '',
-    content: '这是第一条示例评论的内容。',
-    createTime: '2026-05-22 10:00',
-    likeCount: 3,
-    commentCount: 1,
-    collapsed: false
-  },
-  {
-    id: 'c2',
-    authorName: '评论者B',
-    authorAvatar: '',
-    content: '第二条评论，演示折叠与删除。',
-    createTime: '2026-05-22 11:12',
-    likeCount: 1,
-    commentCount: 0,
-    collapsed: false
-  }
-]);
+// 示例评论（支持二级评论）
 
 function toggleCommentCollapse(c: any) {
   c.collapsed = !c.collapsed;
 }
 
-async function deleteComment(c: any) {
+function toggleChildrenCollapse(c: any) {
+  c.childrenCollapsed = !c.childrenCollapsed;
+}
+
+function visibleChildren(c: any) {
+  if (!c.children || c.children.length === 0) return [];
+  if (c.childrenCollapsed) return c.children.slice(0, 2);
+  return c.children;
+}
+
+async function handleDeleteComment(c: any) {
   try {
     await ElMessageBox.confirm('确认删除该评论？', '提示', { type: 'warning' });
-    const idx = comments.value.findIndex(i => i.id === c.id);
-    if (idx >= 0) comments.value.splice(idx, 1);
+    await deleteComment(c.id);
+    await handleCommentChanged();
     ElMessage.success('评论已删除');
   } catch {
     // canceled
@@ -231,7 +238,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
           </div>
           <div class="post-dates">
             <span v-if="post?.createTime">发布日期: {{ post?.createTime }}</span>
-            <span v-if="post?.updateTime" style="margin-left: 8px">最后编辑: {{ post?.updateTime }}</span>
+            <span v-if="post?.updateTime" class="date-gap">最后编辑: {{ post?.updateTime }}</span>
           </div>
         </div>
 
@@ -243,7 +250,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
 
         <!-- 评论区 -->
         <div class="comments">
-          <div class="comments-title">评论（{{ comments.length }}）</div>
+          <div class="comments-title">评论（{{ comments?.length ?? 0 }}）</div>
           <div class="comment-list">
             <div v-for="c in comments" :key="c.id" class="comment-item">
               <div class="comment-head">
@@ -262,12 +269,46 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
                 <div v-else class="comment-collapsed">已折叠</div>
               </div>
               <div class="comment-footer">
-                <div class="comment-meta">{{ c.createTime }} · 点赞 {{ c.likeCount }} · 评论 {{ c.commentCount }}</div>
-                <div class="comment-actions">
+                <div class="comment-meta">
+                  {{ c.createTime }} · 点赞 {{ c.likeCount }} · 评论 {{ c.children?.length ?? 0 }}
+                </div>
+                <div class="comment-actions" :class="{ display: mode === 'view' ? true : false }">
                   <ElButton link size="small" @click="() => toggleCommentCollapse(c)">
                     {{ c.collapsed ? '展开' : '折叠' }}
                   </ElButton>
-                  <ElButton link size="small" @click="() => deleteComment(c)">删除</ElButton>
+                  <ElButton link size="small" @click="() => handleDeleteComment(c)">删除</ElButton>
+                </div>
+              </div>
+              <!-- 二级评论列表（默认折叠，仅显示前两条） -->
+              <div v-if="c.children && c.children.length" class="replies">
+                <div v-for="r in visibleChildren(c)" :key="r.id" class="reply-item">
+                  <div class="reply-head">
+                    <ElAvatar :size="28">
+                      <img
+                        v-if="r.authorAvatar"
+                        :src="r.authorAvatar"
+                        style="width: 100%; height: 100%; object-fit: cover"
+                        @error="() => (r.authorAvatar = '')"
+                      />
+                    </ElAvatar>
+                    <div class="reply-author">
+                      {{ r.authorName }}
+                      <span v-if="r.replyToName" class="reply-to">回复</span>
+                      {{ r.replyToName }}
+                    </div>
+                  </div>
+                  <div class="reply-content">{{ r.content }}</div>
+                  <div class="reply-footer">
+                    <div class="reply-meta">{{ r.createTime }} · 点赞 {{ r.likeCount }}</div>
+                    <div class="reply-actions" :class="{ display: mode === 'view' ? true : false }">
+                      <ElButton link size="small" @click="() => handleDeleteComment(r)">删除</ElButton>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="c.children.length > 2" class="reply-toggle">
+                  <ElButton link size="small" @click="() => toggleChildrenCollapse(c)">
+                    {{ c.childrenCollapsed ? '显示所有评论' : '收起评论' }}
+                  </ElButton>
                 </div>
               </div>
             </div>
@@ -295,23 +336,14 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
           </div>
         </div>
 
-        <div class="ops-box">
-          <ElButton v-if="post?.status === 'pending'" type="success" style="width: 100%" @click="() => doAudit(true)">
-            通过
-          </ElButton>
-          <ElButton
-            v-if="post?.status === 'pending'"
-            type="warning"
-            style="width: 100%; margin-top: 8px"
-            @click="() => doAudit(false)"
-          >
-            驳回
-          </ElButton>
-          <ElButton type="danger" style="width: 100%; margin-top: 8px" @click="doDelete">删除</ElButton>
-          <ElButton type="info" style="width: 100%; margin-top: 8px" @click="toggleTop">
+        <div class="ops-box" :class="{ 'box-display': mode === 'view' ? true : false }">
+          <ElButton v-if="post?.status === 'pending'" type="success" @click="() => doAudit(true)">通过</ElButton>
+          <ElButton v-if="post?.status === 'pending'" type="warning" @click="() => doAudit(false)">驳回</ElButton>
+          <ElButton type="danger" @click="doDelete">删除</ElButton>
+          <ElButton type="info" @click="toggleTop">
             {{ post?.top === 1 ? '取消置顶' : '置顶' }}
           </ElButton>
-          <ElButton type="info" style="width: 100%; margin-top: 8px" @click="toggleEssence">
+          <ElButton type="info" @click="toggleEssence">
             {{ post?.essence === 1 ? '取消加精' : '加精' }}
           </ElButton>
         </div>
@@ -365,6 +397,9 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
       align-items: center;
       margin-bottom: 12px;
     }
+    .date-gap {
+      margin-left: 8px;
+    }
   }
   .post-body {
     min-height: 220px;
@@ -400,6 +435,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
       }
       .comment-body {
         margin-top: 8px;
+        margin-left: 44px;
       }
       .comment-footer {
         margin-top: 8px;
@@ -407,6 +443,61 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
         justify-content: space-between;
         color: #888;
         font-size: 13px;
+        .comment-actions.display {
+          display: none;
+        }
+      }
+      .replies {
+        margin-top: 10px;
+        padding-left: 44px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .reply-item {
+        /* background: #fafafa; */
+        border-radius: 6px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .reply-head {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .reply-author {
+        font-weight: 600;
+        /* color: #333; */
+      }
+      .reply-to {
+        color: #888;
+        margin-left: 6px;
+        font-weight: 400;
+      }
+      .reply-content {
+        /* color: #333; */
+        font-size: 14px;
+      }
+
+      .reply-footer {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .reply-meta {
+        color: #999;
+        font-size: 12px;
+      }
+      .reply-toggle {
+        padding-left: 44px;
+      }
+      .reply-actions {
+        margin: 1px 0;
+      }
+      .reply-actions.display {
+        display: none;
       }
     }
   }
@@ -422,7 +513,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
     border-radius: 6px;
     .stat {
       text-align: center;
-      color: #666;
+      /* color: #666; */
       strong {
         font-size: 18px;
         display: block;
@@ -436,7 +527,11 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
     flex-direction: column;
     .el-button {
       margin: 4px 0px;
+      width: 100%;
     }
+  }
+  .ops-box.box-display {
+    display: none;
   }
 }
 .deleted-tag {

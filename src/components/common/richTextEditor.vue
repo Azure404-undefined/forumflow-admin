@@ -10,6 +10,8 @@ import { uploadImage, uploadVideo } from '@/service/api/post';
 
 const props = defineProps<{
   modelValue: string;
+  /** 可选：自定义工具栏键列表（例如 ['emotion','uploadImage']） */
+  toolbarKeys?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -23,8 +25,9 @@ const valueHtml = ref('');
 const editorRef = shallowRef<IDomEditor>();
 
 // 工具栏配置 —— 仅保留表情、图片、视频
+// 使用传入的 toolbarKeys（优先），否则使用默认值（含视频）
 const toolbarConfig: Partial<IToolbarConfig> = {
-  toolbarKeys: ['emotion', 'uploadImage', 'uploadVideo']
+  toolbarKeys: props.toolbarKeys ?? ['emotion', 'uploadImage', 'uploadVideo']
 };
 
 // 编辑器核心配置
@@ -103,7 +106,7 @@ onBeforeUnmount(() => {
   <div>
     <Editor
       v-model="valueHtml"
-      style="height: 100%; overflow-y: auto"
+      style="height: 400px; overflow-y: auto"
       :default-config="editorConfig"
       mode="default"
       @on-created="handleCreated"

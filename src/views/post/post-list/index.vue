@@ -14,7 +14,7 @@ import {
   setPostTop
 } from '@/service/api/post';
 import CustomPagination from '@/components/custom/pagination.vue';
-import DetailDialog from './modules/detailDialog.vue';
+import DetailDialog from '../components/detailDialog.vue';
 
 // 搜索与分页
 const searchForm = reactive({
@@ -279,43 +279,45 @@ onMounted(() => {
 
 <template>
   <div class="post-list-page">
-    <ElCollapse v-model="activeName" accordion class="collapse-search">
-      <ElCollapseItem title="搜索选项" name="1" class="search-item">
-        <div class="search-bar">
-          <ElInput v-model="searchForm.title" placeholder="按标题搜索" clearable class="search-input" />
-          <ElInput v-model="searchForm.authorName" placeholder="按作者搜索" clearable class="search-input" />
-          <ElSelect v-model="searchForm.forumId" placeholder="版块" class="status-select">
-            <ElOption v-for="f in forums" :key="f.id" :label="f.name" :value="f.id" />
-          </ElSelect>
-          <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
-            <ElOption label="全部" value="" />
-            <ElOption label="草稿" value="draft" />
-            <ElOption label="已发布" value="published" />
-            <ElOption label="待审核" value="pending" />
-            <ElOption label="已驳回" value="rejected" />
-            <ElOption label="已删除" value="deleted" />
-          </ElSelect>
-          <ElSelect v-model="searchForm.top" placeholder="置顶" class="status-select">
-            <!-- <ElOption label="全部" value="" /> -->
-            <ElOption label="置顶" :value="1" />
-            <ElOption label="未置顶" :value="0" />
-          </ElSelect>
-          <ElSelect v-model="searchForm.essence" placeholder="加精" class="status-select">
-            <!-- <ElOption label="全部" value="" /> -->
-            <ElOption label="加精" :value="1" />
-            <ElOption label="未加精" :value="0" />
-          </ElSelect>
-          <ElDatePicker
-            v-model="searchForm.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-          />
-          <ElButton @click="resetSearch">重置</ElButton>
-        </div>
-      </ElCollapseItem>
-    </ElCollapse>
+    <ElCard class="collapse-search">
+      <ElCollapse v-model="activeName" accordion>
+        <ElCollapseItem title="搜索选项" name="1" class="search-item">
+          <div class="search-bar">
+            <ElInput v-model="searchForm.title" placeholder="按标题搜索" clearable class="search-input" />
+            <ElInput v-model="searchForm.authorName" placeholder="按作者搜索" clearable class="search-input" />
+            <ElSelect v-model="searchForm.forumId" placeholder="版块" class="status-select">
+              <ElOption v-for="f in forums" :key="f.id" :label="f.name" :value="f.id" />
+            </ElSelect>
+            <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
+              <ElOption label="全部" value="" />
+              <ElOption label="草稿" value="draft" />
+              <ElOption label="已发布" value="published" />
+              <ElOption label="待审核" value="pending" />
+              <ElOption label="已驳回" value="rejected" />
+              <ElOption label="已删除" value="deleted" />
+            </ElSelect>
+            <ElSelect v-model="searchForm.top" placeholder="置顶" class="status-select">
+              <!-- <ElOption label="全部" value="" /> -->
+              <ElOption label="置顶" :value="1" />
+              <ElOption label="未置顶" :value="0" />
+            </ElSelect>
+            <ElSelect v-model="searchForm.essence" placeholder="加精" class="status-select">
+              <!-- <ElOption label="全部" value="" /> -->
+              <ElOption label="加精" :value="1" />
+              <ElOption label="未加精" :value="0" />
+            </ElSelect>
+            <ElDatePicker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+            />
+            <ElButton @click="resetSearch">重置</ElButton>
+          </div>
+        </ElCollapseItem>
+      </ElCollapse>
+    </ElCard>
 
     <ElCard class="card-wrapper">
       <div class="card-header">
@@ -338,7 +340,7 @@ onMounted(() => {
         @selection-change="handleSelectionChange"
       >
         <ElTableColumn type="selection" fixed :reserve-selection="true" width="50"></ElTableColumn>
-        <ElTableColumn label="标题" min-width="280">
+        <ElTableColumn label="标题" min-width="280" show-overflow-tooltip>
           <template #default="{ row }">
             <a class="post-title-link" @click="() => detailOpen(row)">{{ row.title }}</a>
           </template>
@@ -481,12 +483,10 @@ onMounted(() => {
 <style scoped lang="scss">
 .post-list-page {
   .collapse-search {
-    margin-bottom: 8px;
-    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
     .search-item {
       box-sizing: border-box;
-      padding: 10px;
-      border: 2px solid #f0f0f0;
       border-radius: 8px;
       .search-bar {
         display: flex;

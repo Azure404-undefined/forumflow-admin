@@ -76,7 +76,8 @@ const editRules: FormRules<EditForm> = {
 
 /** 选中数量（计算属性） */
 const selectedCount = computed(() => selectedRows.value.length);
-
+/** 是否选中了至少一条非已删除的评论（用于启用批量删除按钮） */
+const hasNonDeletedSelected = computed(() => selectedRows.value.some(item => item.status !== 'deleted'));
 /** 返回状态文案 */
 function statusLabel(status: CommentStatus) {
   return statusOptions.find(item => item.value === status)?.label || status;
@@ -114,21 +115,7 @@ async function getCommentList() {
       startTime: startTime || undefined,
       endTime: endTime || undefined
     });
-    // 如果后端返回了 children 字段，会触发表格的树形/展开行为，移除该字段以避免显示下拉图标
-    const rawList = res.data?.list || [];
-    // 深拷贝一份数据并递归移除所有 children 字段，避免修改原始响应
-    const cloned = JSON.parse(JSON.stringify(rawList));
-    const removeChildrenRecursive = (obj: any) => {
-      if (!obj) return;
-      if (Array.isArray(obj)) {
-        obj.forEach(removeChildrenRecursive);
-      } else if (typeof obj === 'object') {
-        if ('children' in obj) delete obj.children;
-        Object.values(obj).forEach(v => removeChildrenRecursive(v));
-      }
-    };
-    removeChildrenRecursive(cloned);
-    comments.value = cloned;
+    comments.value = res.data?.list || [];
     total.value = res.data?.total || 0;
     pageSize.value = res.data?.pageSize || 10;
   } catch {
@@ -205,10 +192,16 @@ async function handleDelete(row: CommentInfo) {
 /** 批量删除 */
 async function handleBatchDelete() {
   if (!ensureSelected()) return;
+  if (!hasNonDeletedSelected.value) {
+    ElMessage.warning('请先选择至少一条未删除的评论');
+    return;
+  }
+
+  const idsToDelete = selectedRows.value.filter(item => item.status !== 'deleted').map(item => item.id);
 
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 条评论吗？`, '提示', { type: 'warning' });
-    await batchDeleteComments(selectedRows.value.map(item => item.id));
+    await ElMessageBox.confirm(`确定要删除选中的 ${idsToDelete.length} 条评论吗？`, '提示', { type: 'warning' });
+    await batchDeleteComments(idsToDelete);
     ElMessage.success('批量删除成功');
     await getCommentList();
   } catch {
@@ -304,7 +297,7 @@ defineExpose({
           <ElButton type="warning" :disabled="!selectedCount" @click="() => handleBatchAudit('rejected')">
             批量驳回
           </ElButton>
-          <ElButton type="danger" :disabled="!selectedCount" @click="handleBatchDelete">批量删除</ElButton>
+          <ElButton type="danger" :disabled="!hasNonDeletedSelected" @click="handleBatchDelete">批量删除</ElButton>
         </div>
       </div>
 
@@ -315,6 +308,7 @@ defineExpose({
         :row-key="row => row.id"
         element-loading-background="rgba(200, 200, 200, 0.8)"
         class="comment-table"
+        :tree-props="{ children: 'none' }"
         @selection-change="handleSelectionChange"
       >
         <ElTableColumn type="selection" fixed :reserve-selection="true" width="50" />
@@ -342,7 +336,7 @@ defineExpose({
         <!-- 所属帖子 -->
         <ElTableColumn label="所属帖子" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
-            <a class="post-title-link" @click="() => detailOpen(row)">{{ row.postTitle }}</a>
+            <span class="post-title-link" @click="() => detailOpen(row)">{{ row.postTitle }}</span>
           </template>
         </ElTableColumn>
 
@@ -415,7 +409,7 @@ defineExpose({
       </template>
     </ElDialog>
 
-    <DetailDialog v-model:model-value="detailVisible" :post-id="detailPostId" mode="view" />
+    <DetailDialog v-model:model-value="detailVisible" :post-id="detailPostId" mode="view" @updated="getCommentList" />
   </div>
 </template>
 

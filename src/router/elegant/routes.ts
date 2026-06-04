@@ -187,6 +187,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'report',
+    path: '/report',
+    component: 'layout.base$view.report',
+    meta: {
+      title: 'report',
+      i18nKey: 'route.report'
+    }
+  },
+  {
     name: 'role',
     path: '/role',
     component: 'layout.base$view.role',

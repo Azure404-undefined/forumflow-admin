@@ -27,6 +27,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "post_post-comment": () => import("@/views/post/post-comment/index.vue"),
   "post_post-forums": () => import("@/views/post/post-forums/index.vue"),
   "post_post-list": () => import("@/views/post/post-list/index.vue"),
+  report: () => import("@/views/report/index.vue"),
   role: () => import("@/views/role/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
   user: () => import("@/views/user/index.vue"),

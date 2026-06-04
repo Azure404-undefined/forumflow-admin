@@ -194,6 +194,7 @@ const routeMap: RouteMap = {
   "post_post-comment": "/post/post-comment",
   "post_post-forums": "/post/post-forums",
   "post_post-list": "/post/post-list",
+  "report": "/report",
   "role": "/role",
   "user": "/user",
   "user-center": "/user-center"

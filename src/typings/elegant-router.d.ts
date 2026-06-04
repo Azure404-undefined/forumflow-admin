@@ -48,6 +48,7 @@ declare module "@elegant-router/types" {
     "post_post-comment": "/post/post-comment";
     "post_post-forums": "/post/post-forums";
     "post_post-list": "/post/post-list";
+    "report": "/report";
     "role": "/role";
     "user": "/user";
     "user-center": "/user-center";
@@ -105,6 +106,7 @@ declare module "@elegant-router/types" {
     | "login"
     | "multi-menu"
     | "post"
+    | "report"
     | "role"
     | "user"
     | "user-center"
@@ -138,6 +140,7 @@ declare module "@elegant-router/types" {
     | "post_post-comment"
     | "post_post-forums"
     | "post_post-list"
+    | "report"
     | "role"
     | "user-center"
     | "user"

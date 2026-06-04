@@ -1,0 +1,565 @@
+<script setup lang="ts">
+import { onMounted, reactive, ref, watch } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { fetchReportDetail, fetchReportList, handleReport } from '@/service/api/report';
+import { fetchCommentDetail } from '@/service/api/comment';
+import CustomPagination from '@/components/custom/pagination.vue';
+import DetailDialog from '../post/components/detailDialog.vue';
+
+type Reason = Api.Report.ReportReason;
+
+const searchForm = reactive({
+  status: '' as Api.Report.ReportStatus | '',
+  targetType: '' as Api.Report.ReportTargetType | '',
+  reporterName: ''
+});
+const dateRange = ref<[string, string] | []>([]);
+const current = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+const loading = ref(false);
+const activeName = ref('0');
+const postDetailVisible = ref(false);
+const currentPostId = ref('');
+const commentDetailVisible = ref(false);
+const currentComment = ref<Api.Comment.CommentInfo | null>(null);
+const currentReport = ref<Api.Report.AggregatedReport>();
+const reportDetailVisible = ref(false);
+const remark = ref('');
+const reportChildrenIndex = ref(0);
+
+const reasonMap: Record<Reason, string> = {
+  spam: '垃圾/广告',
+  harassment: '骚扰/人身攻击',
+  offensive: '冒犯性内容',
+  misinformation: '虚假/误导',
+  illegal: '违法内容',
+  other: '其他'
+};
+
+const typeMap: Record<Api.Report.ReportTargetType, string> = {
+  post: '帖子',
+  comment: '评论'
+};
+
+const reports = ref<Api.Report.AggregatedReport[]>([]);
+
+function handleSearch() {
+  current.value = 1;
+  refresh();
+}
+
+function resetSearch() {
+  searchForm.status = '';
+  searchForm.targetType = '';
+  searchForm.reporterName = '';
+  dateRange.value = [];
+  current.value = 1;
+  refresh();
+}
+
+function typeLabel(type: Api.Report.ReportTargetType) {
+  return typeMap[type] || type;
+}
+
+function reasonLabel(r: Reason) {
+  return reasonMap[r] || r;
+}
+
+async function refresh() {
+  loading.value = true;
+  try {
+    const res = await fetchReportList({
+      status: searchForm.status || undefined,
+      targetType: searchForm.targetType || undefined,
+      reporterName: searchForm.reporterName || undefined,
+      startTime: dateRange.value[0] || undefined,
+      endTime: dateRange.value[1] || undefined,
+      pageNum: current.value,
+      pageSize: pageSize.value
+    });
+    reports.value = res.data?.list || [];
+    total.value = res.data?.total || 0;
+  } catch {
+    ElMessage.error('获取举报列表失败');
+  } finally {
+    loading.value = false;
+  }
+}
+
+function handleApprove(item: Api.Report.AggregatedReport) {
+  ElMessageBox.confirm('确认对该目标下所有举报执行“通过”操作吗？', '处理举报', {
+    type: 'warning'
+  })
+    .then(async () => {
+      try {
+        await handleReport({
+          targetIds: [item.targetId],
+          action: 'approve'
+        });
+        ElMessage.success('已通过');
+        refresh();
+      } catch {
+        ElMessage.error('处理举报失败');
+      }
+    })
+    .catch(() => {});
+}
+
+function handleReject(item: Api.Report.AggregatedReport) {
+  ElMessageBox.confirm('确认对该目标下所有举报执行“驳回”操作吗？', '处理举报', {
+    type: 'warning'
+  })
+    .then(async () => {
+      try {
+        await handleReport({
+          targetIds: [item.targetId],
+          action: 'reject'
+        });
+        ElMessage.success('已驳回');
+        refresh();
+      } catch {
+        ElMessage.error('处理举报失败');
+      }
+    })
+    .catch(() => {});
+}
+
+// 抽屉底部：取消
+function drawerCancel() {
+  reportDetailVisible.value = false;
+  remark.value = '';
+}
+
+// 抽屉底部：通过举报
+function drawerApprove() {
+  if (!currentReport.value) return;
+  ElMessageBox.confirm('确认对该目标下所有举报执行“通过”操作吗？', '处理举报', {
+    type: 'warning'
+  })
+    .then(async () => {
+      loading.value = true;
+      try {
+        await handleReport({
+          targetIds: [currentReport.value!.targetId],
+          action: 'approve',
+          remark: remark.value || undefined
+        });
+        const res = await fetchReportDetail(currentReport.value!.targetId);
+        currentReport.value = res.data || undefined;
+        ElMessage.success('已通过');
+        refresh();
+      } catch {
+        ElMessage.error('处理举报失败');
+      } finally {
+        loading.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+// 抽屉底部：驳回举报
+function drawerReject() {
+  if (!currentReport.value) return;
+  ElMessageBox.confirm('确认对该目标下所有举报执行“驳回”操作吗？', '处理举报', {
+    type: 'warning'
+  })
+    .then(async () => {
+      loading.value = true;
+      try {
+        await handleReport({
+          targetIds: [currentReport.value!.targetId],
+          action: 'reject',
+          remark: remark.value || undefined
+        });
+        const res = await fetchReportDetail(currentReport.value!.targetId);
+        currentReport.value = res.data || undefined;
+        ElMessage.success('已驳回');
+        refresh();
+      } catch {
+        ElMessage.error('处理举报失败');
+      } finally {
+        loading.value = false;
+      }
+    })
+    .catch(() => {});
+}
+
+async function viewTarget(row: Api.Report.AggregatedReport) {
+  if (row.targetType === 'post') {
+    currentPostId.value = row.targetId;
+    postDetailVisible.value = true;
+  } else {
+    try {
+      const res = await fetchCommentDetail(row.targetId);
+      currentComment.value = res.data;
+      commentDetailVisible.value = true;
+    } catch {
+      ElMessage.error('获取评论详情失败');
+    }
+  }
+}
+
+function viewChildrenReport(row: Api.Report.ReportDetail) {
+  const detailReport = reports.value.find(item => item.children?.some(child => child.id === row.id));
+  const index = detailReport?.children?.findIndex(child => child.id === row.id) || 0;
+  viewReport(detailReport!, index);
+}
+
+function viewReport(row: Api.Report.AggregatedReport, index: number) {
+  loading.value = true;
+  try {
+    currentReport.value = row;
+    reportChildrenIndex.value = index;
+    reportDetailVisible.value = true;
+  } catch {
+    ElMessage.error('获取举报详情失败');
+  } finally {
+    loading.value = false;
+  }
+}
+
+watch([current, pageSize], () => {
+  refresh();
+});
+
+onMounted(() => {
+  refresh();
+});
+</script>
+
+<template>
+  <div class="report-page">
+    <ElCard class="collapse-search">
+      <ElCollapse v-model="activeName" accordion>
+        <ElCollapseItem title="搜索选项" name="1" class="search-item">
+          <div class="search-bar">
+            <ElSelect v-model="searchForm.status" placeholder="处理状态" clearable class="status-select">
+              <ElOption label="待处理" value="pending" />
+              <ElOption label="已通过" value="approved" />
+              <ElOption label="已驳回" value="rejected" />
+            </ElSelect>
+            <ElSelect v-model="searchForm.targetType" placeholder="举报类型" clearable class="status-select">
+              <ElOption label="帖子" value="post" />
+              <ElOption label="评论" value="comment" />
+            </ElSelect>
+            <ElInput v-model="searchForm.reporterName" placeholder="举报人" clearable class="search-input" />
+            <ElDatePicker
+              v-model="dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="YYYY-MM-DD"
+            />
+            <ElButton type="primary" @click="handleSearch">查询</ElButton>
+            <ElButton @click="resetSearch">重置</ElButton>
+          </div>
+        </ElCollapseItem>
+      </ElCollapse>
+    </ElCard>
+
+    <ElCard class="card-wrapper">
+      <div class="card-header">
+        <ElText size="large">举报管理</ElText>
+        <div class="actions-space">
+          <ElButton type="primary" @click="refresh">刷新</ElButton>
+        </div>
+      </div>
+
+      <ElTable v-loading="loading" :data="reports" row-key="targetId" stripe>
+        <ElTableColumn type="expand" width="40">
+          <template #default="{ row }">
+            <div class="children-wrap">
+              <ElTable :data="row.children" size="small" border>
+                <ElTableColumn prop="reporterName" label="举报人" width="140" />
+                <ElTableColumn prop="createTime" label="举报时间" width="180" />
+                <ElTableColumn label="举报原因">
+                  <template #default="{ row: child }">
+                    <div>{{ reasonLabel(child.reason) }}</div>
+                    <div v-if="child.reasonDesc" class="desc">{{ child.reasonDesc }}</div>
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="操作" width="240" align="center">
+                  <template #default="{ row: view }">
+                    <ElButton type="info" plain size="small" @click="viewChildrenReport(view)">查看举报信息</ElButton>
+                  </template>
+                </ElTableColumn>
+              </ElTable>
+            </div>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn label="举报对象" width="110" align="center">
+          <template #default="{ row }">
+            <div>{{ typeLabel(row.targetType) }}</div>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn prop="targetTitle" label="对象标题" show-overflow-tooltip>
+          <template #default="{ row }">
+            <ElButton link type="default" @click="viewTarget(row)">{{ row.targetTitle }}</ElButton>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn label="举报次数" width="120" align="center">
+          <template #default="{ row }">{{ row.reportCount }}</template>
+        </ElTableColumn>
+
+        <ElTableColumn label="举报原因" width="160">
+          <template #default="{ row }">{{ reasonLabel(row.latestReason) }}</template>
+        </ElTableColumn>
+
+        <ElTableColumn label="状态" width="140" align="center">
+          <template #default="{ row }">
+            <ElTag :type="row.status === 'approved' ? 'success' : row.status === 'pending' ? 'warning' : 'danger'">
+              {{ row.status === 'pending' ? '待处理' : row.status === 'approved' ? '已通过' : '已驳回' }}
+            </ElTag>
+            <div v-if="row.handlerName && row.status !== 'pending'" class="handler">
+              {{ row.handlerName }} {{ row.handleTime }}
+            </div>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn label="操作" width="240" align="center">
+          <template #default="{ row }">
+            <ElButton type="info" plain size="small" @click="viewReport(row, 0)">查看详情</ElButton>
+            <ElButton
+              v-if="row.status === 'pending'"
+              type="success"
+              plain
+              size="small"
+              @click="() => handleApprove(row)"
+            >
+              通过
+            </ElButton>
+            <ElButton
+              v-if="row.status === 'pending'"
+              type="warning"
+              plain
+              size="small"
+              @click="() => handleReject(row)"
+            >
+              驳回
+            </ElButton>
+            <ElButton v-else type="info" plain size="small" disabled>已处理</ElButton>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+      <div class="pagination-wrap">
+        <CustomPagination v-model:current="current" v-model:page-size="pageSize" :total="total" />
+      </div>
+    </ElCard>
+
+    <DetailDialog v-model="postDetailVisible" :post-id="currentPostId" mode="view"></DetailDialog>
+
+    <ElDialog v-model="commentDetailVisible" title="评论详情" width="500px">
+      <div v-if="currentComment" class="comment-detail">
+        <div class="comment-content">评论内容：{{ currentComment.content }}</div>
+        <div class="comment-info">
+          <ElButton
+            link
+            type="default"
+            @click="
+              () => {
+                postDetailVisible = true;
+                currentPostId = currentComment!.postId;
+              }
+            "
+          >
+            所属帖子：{{ currentComment.postTitle }}
+          </ElButton>
+
+          <div>评论人：{{ currentComment.authorName }}</div>
+        </div>
+      </div>
+    </ElDialog>
+
+    <ElDrawer v-model="reportDetailVisible" title="举报详情" size="380px" class="reportDetail-drawer">
+      <div v-loading="loading" class="report-detail-drawer">
+        <ElCard class="card-drawer-message">
+          <template #header>
+            <span>举报信息</span>
+          </template>
+          <div class="reporter">
+            <div>举报ID：{{ currentReport?.targetId }}</div>
+            <div>举报类型：{{ typeLabel(currentReport!.targetType) }}</div>
+            <div>举报人：{{ currentReport?.children[reportChildrenIndex].reporterName }}</div>
+            <div>举报原因：{{ reasonLabel(currentReport!.children[reportChildrenIndex].reason) }}</div>
+          </div>
+          <div class="reason">
+            <div>举报时间：{{ currentReport?.children[reportChildrenIndex].createTime }}</div>
+            <div>详细描述：{{ currentReport?.children[reportChildrenIndex].reasonDesc }}</div>
+          </div>
+        </ElCard>
+        <ElCard class="card-drawer-target">
+          <template #header>
+            <span>被举报内容（{{ typeLabel(currentReport!.targetType) }}）</span>
+          </template>
+          <ElButton link type="default" @click="viewTarget(currentReport!)">
+            内容详情：{{ currentReport!.targetTitle }}
+          </ElButton>
+          <div class="count">
+            <div>内容标题：{{ currentReport?.targetTitle }}</div>
+            <div>被举报数：{{ currentReport?.reportCount }}</div>
+          </div>
+        </ElCard>
+        <ElCard class="card-drawer-action">
+          <template #header>
+            <span>处理信息</span>
+          </template>
+          <div class="handler-info">
+            <div>
+              处理状态：
+              <ElTag
+                :type="
+                  currentReport?.status === 'approved'
+                    ? 'success'
+                    : currentReport?.status === 'pending'
+                      ? 'warning'
+                      : 'danger'
+                "
+              >
+                {{
+                  currentReport?.status === 'pending'
+                    ? '待处理'
+                    : currentReport?.status === 'approved'
+                      ? '已通过'
+                      : '已驳回'
+                }}
+              </ElTag>
+            </div>
+            <div v-if="currentReport?.status !== 'pending'">处理人：{{ currentReport?.handlerName }}</div>
+          </div>
+          <div v-if="currentReport?.status !== 'pending'">处理时间：{{ currentReport?.handleTime }}</div>
+          <div>处理备注（选填）</div>
+          <ElInput v-model="remark" class="textarea" :rows="3" type="textarea" placeholder="状态处理描述..." />
+        </ElCard>
+        <div class="report-button">
+          <ElButton type="default" size="large" @click="drawerCancel">取消</ElButton>
+          <ElButton type="danger" size="large" @click="drawerApprove">通过举报</ElButton>
+          <ElButton type="primary" size="large" @click="drawerReject">驳回举报</ElButton>
+        </div>
+      </div>
+    </ElDrawer>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.report-page {
+  .collapse-search {
+    margin-bottom: 10px;
+    border-radius: 8px;
+    .search-item {
+      box-sizing: border-box;
+      border-radius: 8px;
+      .search-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        .search-input {
+          width: 220px;
+        }
+
+        .status-select {
+          width: 140px;
+        }
+      }
+    }
+  }
+
+  :deep(.el-table__placeholder) {
+    display: none;
+  }
+
+  .card-wrapper {
+    padding: 12px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .children-wrap {
+    padding: 8px 12px;
+    background: #fafafa;
+  }
+
+  .desc {
+    color: #666;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .handler {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  .comment-detail {
+    .comment-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+  }
+
+  .pagination-wrap {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+  }
+
+  //   .reportDetail-drawer {
+  :deep(.el-drawer__header) {
+    margin-bottom: 8px;
+  }
+  //   }
+
+  .report-detail-drawer {
+    display: grid;
+    grid-template-rows: 200px 200px 1fr;
+    gap: 12px;
+    .card-drawer-message,
+    .card-drawer-target,
+    .card-drawer-action {
+      background-color: #f0f0f0;
+      .textarea {
+        margin-top: 12px;
+      }
+    }
+    .reporter {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .reason div {
+      margin-top: 12px;
+    }
+    .count {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .handler-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .report-button {
+      margin-top: 12px;
+      // display: flex;
+      // justify-content: space-between;
+    }
+  }
+}
+</style>

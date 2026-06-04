@@ -232,7 +232,8 @@ const local: App.I18n.Schema = {
     post: '帖子管理',
     'post_post-list': '帖子列表',
     'post_post-forums': '板块管理',
-    'post_post-comment': '评论管理'
+    'post_post-comment': '评论管理',
+    report: '举报管理'
   },
   page: {
     login: {

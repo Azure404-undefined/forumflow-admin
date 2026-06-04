@@ -53,3 +53,13 @@ export function editComment(id: string, content: string) {
     data: { content }
   });
 }
+
+/**
+ * 获取评论详情
+ */
+export function fetchCommentDetail(id: string) {
+  return request<Api.Comment.CommentInfo>({
+    url: `/comments/${id}`,
+    method: 'get'
+  });
+}

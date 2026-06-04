@@ -486,6 +486,9 @@ function handleIconChange(uploadFile: UploadFile) {
   if (!isSvg) {
     ElMessage.warning('请选择 SVG 图标文件');
     return;
+  } else if (raw.size > 1024 * 1024) {
+    ElMessage.warning('图标文件大小不能超过 1MB');
+    return;
   }
 
   revokeIconPreview();

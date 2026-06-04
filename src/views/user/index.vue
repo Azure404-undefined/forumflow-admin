@@ -26,6 +26,7 @@ const regPassword = /^\w{6,18}$/;
 const loading = ref(false);
 const isOpen = ref(false);
 const isEdit = ref(false);
+const activeName = ref('0');
 const tableRef = ref();
 const formRef = ref<FormInstance | null>(null);
 const isBatchOpen = ref(false);
@@ -308,23 +309,36 @@ onMounted(() => {
 
 <template>
   <div class="user-list-page">
-    <div class="search-bar">
-      <ElInput v-model="searchForm.username" placeholder="按用户名搜索" clearable class="search-input" />
-      <ElInput v-model="searchForm.nickname" placeholder="按昵称搜索" clearable class="search-input" />
-      <ElInput v-model="searchForm.phone" placeholder="按电话号码搜索" clearable class="search-input" />
-      <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
-        <ElOption label="全部" value="" />
-        <ElOption label="启用" :value="1" />
-        <ElOption label="禁用" :value="0" />
-      </ElSelect>
-      <ElButton type="primary" :loading="loading" @click="getUserList">刷新</ElButton>
-      <ElButton @click="resetSearch">重置</ElButton>
-      <div class="actions-space"></div>
-      <ElButton type="primary" @click="handleCreate()">新增用户</ElButton>
-      <ElButton type="primary" @click="handleSelectedRowsEdit">批量操作</ElButton>
-    </div>
+    <ElCard class="collapse-search">
+      <ElCollapse v-model="activeName" accordion>
+        <ElCollapseItem title="搜索选项" name="1" class="search-item">
+          <div class="search-bar">
+            <ElInput v-model="searchForm.username" placeholder="按用户名搜索" clearable class="search-input" />
+            <ElInput v-model="searchForm.nickname" placeholder="按昵称搜索" clearable class="search-input" />
+            <ElInput v-model="searchForm.phone" placeholder="按电话号码搜索" clearable class="search-input" />
+            <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
+              <ElOption label="全部" value="" />
+              <ElOption label="启用" :value="1" />
+              <ElOption label="禁用" :value="0" />
+            </ElSelect>
+            <div class="search-btns">
+              <ElButton type="primary" :loading="loading" @click="getUserList">刷新</ElButton>
+              <ElButton @click="resetSearch">重置</ElButton>
+            </div>
+          </div>
+        </ElCollapseItem>
+      </ElCollapse>
+    </ElCard>
 
     <ElCard class="card-wrapper">
+      <div class="card-header">
+        <ElText class="mx-1" size="large">用户列表</ElText>
+        <div class="actions-space">
+          <ElButton type="primary" @click="handleCreate()">新增用户</ElButton>
+          <ElButton type="primary" @click="handleSelectedRowsEdit">批量操作</ElButton>
+        </div>
+      </div>
+
       <ElTable
         ref="tableRef"
         v-loading="loading"
@@ -496,23 +510,42 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .user-list-page {
-  .search-bar {
+  .collapse-search {
+    margin-bottom: 10px;
+    border-radius: 8px;
+    .search-item {
+      box-sizing: border-box;
+      border-radius: 8px;
+      .search-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        .search-input {
+          width: 220px;
+        }
+
+        .status-select {
+          width: 140px;
+        }
+      }
+    }
+  }
+
+  .card-header {
     display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
-
-    .search-input {
-      width: 200px;
-    }
-
-    .status-select {
-      width: 120px;
-    }
+    justify-content: space-between;
+    margin-bottom: 6px;
 
     .actions-space {
-      flex: 1 1 auto;
+      display: flex;
+      flex-wrap: wrap;
+      .el-button {
+        margin: 4px 8px;
+        width: 80px;
+      }
     }
   }
 

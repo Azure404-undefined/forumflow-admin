@@ -23,6 +23,7 @@ const dialogFormVisible = ref(false);
 const batchDialogVisible = ref(false);
 const permissionDialogVisible = ref(false);
 const submitting = ref(false);
+const activeName = ref('0');
 const batchForm = ref({ status: 0 as 0 | 1 });
 const tableRef = ref();
 const treeRef = ref<TreeInstance>();
@@ -288,22 +289,32 @@ onMounted(() => {
 
 <template>
   <div class="role-page">
-    <div class="search-bar">
-      <ElInput v-model="searchForm.id" placeholder="按角色ID搜索" clearable class="search-input" />
-      <ElInput v-model="searchForm.name" placeholder="按名称搜索" clearable class="search-input" />
-      <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
-        <ElOption label="全部" value="" />
-        <ElOption label="启用" :value="1" />
-        <ElOption label="禁用" :value="0" />
-      </ElSelect>
-      <ElButton type="primary" @click="handleSearch">查询</ElButton>
-      <ElButton @click="resetSearch">重置</ElButton>
-      <div class="actions-space"></div>
-      <ElButton type="primary" @click="handleCreate">新增角色</ElButton>
-      <ElButton type="primary" @click="handleSelectionEdit">批量操作</ElButton>
-    </div>
+    <ElCard class="collapse-search">
+      <ElCollapse v-model="activeName" accordion>
+        <ElCollapseItem title="搜索选项" name="1" class="search-item">
+          <div class="search-bar">
+            <ElInput v-model="searchForm.id" placeholder="按角色ID搜索" clearable class="search-input" />
+            <ElInput v-model="searchForm.name" placeholder="按名称搜索" clearable class="search-input" />
+            <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
+              <ElOption label="全部" value="" />
+              <ElOption label="启用" :value="1" />
+              <ElOption label="禁用" :value="0" />
+            </ElSelect>
+            <ElButton type="primary" @click="handleSearch">查询</ElButton>
+            <ElButton @click="resetSearch">重置</ElButton>
+          </div>
+        </ElCollapseItem>
+      </ElCollapse>
+    </ElCard>
 
     <ElCard class="card-wrapper">
+      <div class="actions-space">
+        <div>角色列表</div>
+        <div class="actions-button">
+          <ElButton type="primary" @click="handleCreate">新增角色</ElButton>
+          <ElButton type="primary" @click="handleSelectionEdit">批量操作</ElButton>
+        </div>
+      </div>
       <ElTable
         ref="tableRef"
         v-loading="loading"
@@ -411,27 +422,37 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .role-page {
-  .search-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+  .collapse-search {
+    margin-bottom: 10px;
+    border-radius: 8px;
+    .search-item {
+      box-sizing: border-box;
+      border-radius: 8px;
+      .search-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
 
-    .search-input {
-      width: 200px;
-    }
+        .search-input {
+          width: 220px;
+        }
 
-    .status-select {
-      width: 120px;
-    }
-
-    .actions-space {
-      flex: 1 1 auto;
+        .status-select {
+          width: 140px;
+        }
+      }
     }
   }
 
   .card-wrapper {
     padding: 12px;
+    .actions-space {
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
   }
 
   .role-table {

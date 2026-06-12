@@ -1,4 +1,12 @@
 <script setup lang="ts">
+/**
+ * 举报管理页（Report Management）
+ *
+ * 说明：
+ * - 本页面用于管理社区中用户提交的举报信息，支持按被举报目标聚合展示、展开查看单条举报、查看被举报的帖子或评论详情，
+ *   并对该目标下的所有举报执行“通过/驳回”操作（可填写备注）。
+ * - 组件使用 Vue 3 `<script setup>` 语法糖和 Element Plus 组件库。
+ */
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { fetchReportDetail, fetchReportList, handleReport } from '@/service/api/report';
@@ -6,28 +14,55 @@ import { fetchCommentDetail } from '@/service/api/comment';
 import CustomPagination from '@/components/custom/pagination.vue';
 import DetailDialog from '../post/components/detailDialog.vue';
 
+// 举报原因类型别名，便于使用映射表
 type Reason = Api.Report.ReportReason;
 
+// -------------------------------
+// 响应式数据（state）
+// -------------------------------
+// 搜索筛选表单字段
 const searchForm = reactive({
   status: '' as Api.Report.ReportStatus | '',
   targetType: '' as Api.Report.ReportTargetType | '',
   reporterName: ''
 });
+
+// 时间范围（开始、结束）
 const dateRange = ref<[string, string] | []>([]);
+
+// 列表分页相关
 const current = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
+
+// 全局加载状态（列表 / 抽屉操作 等）
 const loading = ref(false);
+
+// 搜索折叠面板激活项（用于控制展开/收起）
 const activeName = ref('0');
+
+// 帖子详情弹窗控制及当前帖子 id
 const postDetailVisible = ref(false);
 const currentPostId = ref('');
+
+// 评论详情弹窗控制与当前评论数据
 const commentDetailVisible = ref(false);
 const currentComment = ref<Api.Comment.CommentInfo | null>(null);
+
+// 当前在抽屉中查看的被举报目标（聚合）以及抽屉可见性
 const currentReport = ref<Api.Report.AggregatedReport>();
 const reportDetailVisible = ref(false);
+
+// 抽屉内处理备注
 const remark = ref('');
+
+// 报告子项索引（用于抽屉中显示具体某条举报的信息）
 const reportChildrenIndex = ref(0);
 
+// -------------------------------
+// 映射与常量
+// -------------------------------
+// 举报原因映射（枚举值 -> 中文描述）
 const reasonMap: Record<Reason, string> = {
   spam: '垃圾/广告',
   harassment: '骚扰/人身攻击',
@@ -37,18 +72,38 @@ const reasonMap: Record<Reason, string> = {
   other: '其他'
 };
 
+// 被举报目标类型映射
 const typeMap: Record<Api.Report.ReportTargetType, string> = {
   post: '帖子',
   comment: '评论'
 };
 
+// 后端返回的聚合举报列表（每个元素代表同一个目标下的多条举报）
 const reports = ref<Api.Report.AggregatedReport[]>([]);
 
+// -------------------------------
+// 工具函数（格式化显示）
+// -------------------------------
+/** 将目标类型转换为可读标签 */
+function typeLabel(type: Api.Report.ReportTargetType) {
+  return typeMap[type] || type;
+}
+
+/** 将举报原因转换为可读标签 */
+function reasonLabel(r: Reason) {
+  return reasonMap[r] || r;
+}
+
+// -------------------------------
+// 搜索与分页操作
+// -------------------------------
+/** 执行查询（或点击查询按钮）: 重置到第一页并刷新列表 */
 function handleSearch() {
   current.value = 1;
   refresh();
 }
 
+/** 重置搜索条件并刷新 */
 function resetSearch() {
   searchForm.status = '';
   searchForm.targetType = '';
@@ -58,14 +113,14 @@ function resetSearch() {
   refresh();
 }
 
-function typeLabel(type: Api.Report.ReportTargetType) {
-  return typeMap[type] || type;
-}
-
-function reasonLabel(r: Reason) {
-  return reasonMap[r] || r;
-}
-
+// -------------------------------
+// 数据请求：拉取举报列表
+// -------------------------------
+/**
+ * 拉取举报聚合列表
+ * - 会根据 `searchForm`、`dateRange`、`current`、`pageSize` 发起请求
+ * - 成功后更新 `reports` 和 `total`
+ */
 async function refresh() {
   loading.value = true;
   try {
@@ -87,6 +142,10 @@ async function refresh() {
   }
 }
 
+// -------------------------------
+// 批量处理（对某一被举报目标下的所有举报）
+// -------------------------------
+/** 在表格行上执行通过操作（提示确认） */
 function handleApprove(item: Api.Report.AggregatedReport) {
   ElMessageBox.confirm('确认对该目标下所有举报执行“通过”操作吗？', '处理举报', {
     type: 'warning'
@@ -106,6 +165,7 @@ function handleApprove(item: Api.Report.AggregatedReport) {
     .catch(() => {});
 }
 
+/** 在表格行上执行驳回操作（提示确认） */
 function handleReject(item: Api.Report.AggregatedReport) {
   ElMessageBox.confirm('确认对该目标下所有举报执行“驳回”操作吗？', '处理举报', {
     type: 'warning'
@@ -125,13 +185,16 @@ function handleReject(item: Api.Report.AggregatedReport) {
     .catch(() => {});
 }
 
-// 抽屉底部：取消
+// -------------------------------
+// 抽屉内操作（单个聚合目标的详情与处理）
+// -------------------------------
+/** 关闭抽屉并清空备注 */
 function drawerCancel() {
   reportDetailVisible.value = false;
   remark.value = '';
 }
 
-// 抽屉底部：通过举报
+/** 抽屉内执行通过（可填写备注） */
 function drawerApprove() {
   if (!currentReport.value) return;
   ElMessageBox.confirm('确认对该目标下所有举报执行“通过”操作吗？', '处理举报', {
@@ -145,6 +208,7 @@ function drawerApprove() {
           action: 'approve',
           remark: remark.value || undefined
         });
+        // 处理后刷新抽屉内的目标详情
         const res = await fetchReportDetail(currentReport.value!.targetId);
         currentReport.value = res.data || undefined;
         ElMessage.success('已通过');
@@ -158,7 +222,7 @@ function drawerApprove() {
     .catch(() => {});
 }
 
-// 抽屉底部：驳回举报
+/** 抽屉内执行驳回（可填写备注） */
 function drawerReject() {
   if (!currentReport.value) return;
   ElMessageBox.confirm('确认对该目标下所有举报执行“驳回”操作吗？', '处理举报', {
@@ -172,6 +236,7 @@ function drawerReject() {
           action: 'reject',
           remark: remark.value || undefined
         });
+        // 处理后刷新抽屉内的目标详情
         const res = await fetchReportDetail(currentReport.value!.targetId);
         currentReport.value = res.data || undefined;
         ElMessage.success('已驳回');
@@ -185,6 +250,14 @@ function drawerReject() {
     .catch(() => {});
 }
 
+// -------------------------------
+// 查看被举报目标（帖子/评论）
+// -------------------------------
+/**
+ * 查看目标内容：
+ * - 如果是帖子，打开帖子详情弹窗
+ * - 如果是评论，先请求评论详情再打开评论弹窗
+ */
 async function viewTarget(row: Api.Report.AggregatedReport) {
   if (row.targetType === 'post') {
     currentPostId.value = row.targetId;
@@ -200,29 +273,33 @@ async function viewTarget(row: Api.Report.AggregatedReport) {
   }
 }
 
+/** 在展开列表中查看子举报对应的聚合目标并打开抽屉 */
 function viewChildrenReport(row: Api.Report.ReportDetail) {
   const detailReport = reports.value.find(item => item.children?.some(child => child.id === row.id));
   const index = detailReport?.children?.findIndex(child => child.id === row.id) || 0;
   viewReport(detailReport!, index);
 }
 
+/** 打开抽屉查看某个聚合目标的举报详情 */
 function viewReport(row: Api.Report.AggregatedReport, index: number) {
-  loading.value = true;
   try {
     currentReport.value = row;
     reportChildrenIndex.value = index;
     reportDetailVisible.value = true;
   } catch {
     ElMessage.error('获取举报详情失败');
-  } finally {
-    loading.value = false;
   }
 }
 
+// -------------------------------
+// 监听器与生命周期
+// -------------------------------
+// 当分页或页大小变化时，重新拉取列表
 watch([current, pageSize], () => {
   refresh();
 });
 
+// 组件挂载时加载初始数据
 onMounted(() => {
   refresh();
 });

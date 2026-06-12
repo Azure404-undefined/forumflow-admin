@@ -21,6 +21,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "iframe-page": () => import("@/views/_builtin/iframe-page/[url].vue"),
   login: () => import("@/views/_builtin/login/index.vue"),
   about: () => import("@/views/about/index.vue"),
+  dashboard: () => import("@/views/dashboard/index.vue"),
   home: () => import("@/views/home/index.vue"),
   "multi-menu_first_child": () => import("@/views/multi-menu/first_child/index.vue"),
   "multi-menu_second_child_home": () => import("@/views/multi-menu/second_child_home/index.vue"),

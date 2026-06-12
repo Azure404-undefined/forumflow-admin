@@ -233,7 +233,8 @@ const local: App.I18n.Schema = {
     'post_post-list': 'Post List',
     'post_post-forums': 'Post Forums',
     'post_post-comment': 'Post Comment',
-    report: 'Report Manage'
+    report: 'Report Manage',
+    dashboard: 'Dashboard'
   },
   page: {
     login: {

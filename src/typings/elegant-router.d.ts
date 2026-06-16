@@ -35,6 +35,7 @@ declare module "@elegant-router/types" {
     "404": "/404";
     "500": "/500";
     "about": "/about";
+    "config": "/config";
     "dashboard": "/dashboard";
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
@@ -45,6 +46,7 @@ declare module "@elegant-router/types" {
     "multi-menu_second": "/multi-menu/second";
     "multi-menu_second_child": "/multi-menu/second/child";
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
+    "notice": "/notice";
     "post": "/post";
     "post_post-comment": "/post/post-comment";
     "post_post-forums": "/post/post-forums";
@@ -102,11 +104,13 @@ declare module "@elegant-router/types" {
     | "404"
     | "500"
     | "about"
+    | "config"
     | "dashboard"
     | "home"
     | "iframe-page"
     | "login"
     | "multi-menu"
+    | "notice"
     | "post"
     | "report"
     | "role"
@@ -136,10 +140,12 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "about"
+    | "config"
     | "dashboard"
     | "home"
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
+    | "notice"
     | "post_post-comment"
     | "post_post-forums"
     | "post_post-list"

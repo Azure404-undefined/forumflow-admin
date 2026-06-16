@@ -234,7 +234,9 @@ const local: App.I18n.Schema = {
     'post_post-forums': 'Post Forums',
     'post_post-comment': 'Post Comment',
     report: 'Report Manage',
-    dashboard: 'Dashboard'
+    dashboard: 'Dashboard',
+    notice: 'Notice Manage',
+    config: 'Config'
   },
   page: {
     login: {

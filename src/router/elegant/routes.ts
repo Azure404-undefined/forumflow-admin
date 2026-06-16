@@ -51,6 +51,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'config',
+    path: '/config',
+    component: 'layout.base$view.config',
+    meta: {
+      title: 'config',
+      i18nKey: 'route.config'
+    }
+  },
+  {
     name: 'dashboard',
     path: '/dashboard',
     component: 'layout.base$view.dashboard',
@@ -156,6 +165,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         ]
       }
     ]
+  },
+  {
+    name: 'notice',
+    path: '/notice',
+    component: 'layout.base$view.notice',
+    meta: {
+      title: 'notice',
+      i18nKey: 'route.notice'
+    }
   },
   {
     name: 'post',

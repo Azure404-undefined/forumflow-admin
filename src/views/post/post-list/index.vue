@@ -153,7 +153,6 @@ function handleEdit(row: Api.Post.PostInfo) {
 
 async function onSubmit() {
   try {
-    // editor -> form.content 已由 onchange 同步；若未加载 editor，确保 textarea 的值已写入
     if (isEdit.value && form.value.id) {
       await editPost(form.value.id, form.value);
       ElMessage.success('编辑成功');

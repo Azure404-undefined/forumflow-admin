@@ -1,4 +1,3 @@
-<!-- richTextEditor.vue -->
 <script setup lang="ts">
 import '@wangeditor/editor/dist/css/style.css'; // 引入核心 css
 import { nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
@@ -106,7 +105,7 @@ onBeforeUnmount(() => {
   <div>
     <Editor
       v-model="valueHtml"
-      style="height: 400px; overflow-y: auto"
+      style="height: 400px; width: 100%; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 5px"
       :default-config="editorConfig"
       mode="default"
       @on-created="handleCreated"

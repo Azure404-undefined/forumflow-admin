@@ -5,7 +5,7 @@ import { request } from '../request';
  */
 export function fetchConfigs() {
   return request<Api.Config.ConfigResponse>({
-    url: '/configs',
+    url: '/system/configs',
     method: 'get'
   });
 }
@@ -16,7 +16,7 @@ export function fetchConfigs() {
  */
 export function saveConfigs(data: Api.Config.SaveConfigBody) {
   return request({
-    url: '/configs',
+    url: '/system/configs',
     method: 'put',
     data
   });

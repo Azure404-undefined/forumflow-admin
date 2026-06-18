@@ -235,8 +235,9 @@ const local: App.I18n.Schema = {
     'post_post-comment': 'Post Comment',
     report: 'Report Manage',
     dashboard: 'Dashboard',
-    notice: 'Notice Manage',
-    config: 'Config'
+    configoptions: 'Config Options',
+    configoptions_notice: 'Notice Manage',
+    configoptions_config: 'Config'
   },
   page: {
     login: {

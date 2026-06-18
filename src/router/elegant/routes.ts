@@ -51,13 +51,33 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
-    name: 'config',
-    path: '/config',
-    component: 'layout.base$view.config',
+    name: 'configoptions',
+    path: '/configoptions',
+    component: 'layout.base',
     meta: {
-      title: 'config',
-      i18nKey: 'route.config'
-    }
+      title: 'configoptions',
+      i18nKey: 'route.configoptions'
+    },
+    children: [
+      {
+        name: 'configoptions_config',
+        path: '/configoptions/config',
+        component: 'view.configoptions_config',
+        meta: {
+          title: 'configoptions_config',
+          i18nKey: 'route.configoptions_config'
+        }
+      },
+      {
+        name: 'configoptions_notice',
+        path: '/configoptions/notice',
+        component: 'view.configoptions_notice',
+        meta: {
+          title: 'configoptions_notice',
+          i18nKey: 'route.configoptions_notice'
+        }
+      }
+    ]
   },
   {
     name: 'dashboard',
@@ -165,15 +185,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         ]
       }
     ]
-  },
-  {
-    name: 'notice',
-    path: '/notice',
-    component: 'layout.base$view.notice',
-    meta: {
-      title: 'notice',
-      i18nKey: 'route.notice'
-    }
   },
   {
     name: 'post',

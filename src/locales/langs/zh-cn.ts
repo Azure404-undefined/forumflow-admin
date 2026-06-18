@@ -235,8 +235,9 @@ const local: App.I18n.Schema = {
     'post_post-comment': '评论管理',
     report: '举报管理',
     dashboard: '数据统计',
-    notice: '公告管理',
-    config: '系统配置'
+    configoptions: '系统管理',
+    configoptions_notice: '公告管理',
+    configoptions_config: '系统配置'
   },
   page: {
     login: {

@@ -2,6 +2,7 @@ declare namespace Api {
   namespace Config {
     // 配置项的值类型
     type ConfigValueType = 'string' | 'number' | 'boolean' | 'image' | 'json';
+    type ConfigGroupKey = 'basic' | 'seo' | 'feature' | 'third_party';
 
     // 单个配置项
     interface ConfigItem {
@@ -17,7 +18,7 @@ declare namespace Api {
 
     // 配置分组
     interface ConfigGroup {
-      groupKey: string; // 分组唯一标识
+      groupKey: ConfigGroupKey; // 分组唯一标识
       groupName: string; // 分组显示名称
       items: ConfigItem[];
     }

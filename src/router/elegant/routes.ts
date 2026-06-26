@@ -254,11 +254,31 @@ export const generatedRoutes: GeneratedRoute[] = [
   {
     name: 'user-center',
     path: '/user-center',
-    component: 'layout.base$view.user-center',
+    component: 'layout.base',
     meta: {
       title: 'user-center',
       i18nKey: 'route.user-center',
       hideInMenu: true
-    }
+    },
+    children: [
+      {
+        name: 'user-center_profile',
+        path: '/user-center/profile',
+        component: 'view.user-center_profile',
+        meta: {
+          title: 'user-center_profile',
+          i18nKey: 'route.user-center_profile'
+        }
+      },
+      {
+        name: 'user-center_settings',
+        path: '/user-center/settings',
+        component: 'view.user-center_settings',
+        meta: {
+          title: 'user-center_settings',
+          i18nKey: 'route.user-center_settings'
+        }
+      }
+    ]
   }
 ];

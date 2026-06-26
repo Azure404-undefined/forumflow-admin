@@ -237,7 +237,9 @@ const local: App.I18n.Schema = {
     dashboard: 'Dashboard',
     configoptions: 'Config Options',
     configoptions_notice: 'Notice Manage',
-    configoptions_config: 'Config'
+    configoptions_config: 'Config',
+    'user-center_profile': 'Personal Profile',
+    'user-center_settings': 'Personal Settings'
   },
   page: {
     login: {

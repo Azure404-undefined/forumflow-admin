@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { fetchConfigs, saveConfigs } from '@/service/api/config';
+import { uploadImage } from '@/service/api/post';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
 type ConfigGroup = Api.Config.ConfigGroup;
@@ -29,6 +30,7 @@ const getConfigs = async () => {
         group.items.forEach(item => {
           formData[item.key] = item.value;
           // 为每个配置项设置验证规则
+          formRef.value?.clearValidate();
           formRules[item.key] = [{ required: true, message: `${item.label}不能为空`, trigger: 'blur' }];
         });
       });
@@ -86,13 +88,17 @@ const handleReset = () => {
 };
 
 // 图片上传处理
-const handleImageSuccess = (key: string, response: any) => {
-  formData[key] = response.data?.url || '';
-  ElMessage.success('上传成功');
-};
-
-const handleImageError = () => {
-  ElMessage.error('上传失败');
+const handleCustomUpload = async (key: string, options: any) => {
+  const { file, onSuccess, onError } = options;
+  try {
+    const res = await uploadImage(file);
+    formData[key] = res.data?.url || '';
+    onSuccess(res);
+    ElMessage.success('上传成功');
+  } catch (error) {
+    onError(error);
+    ElMessage.error('上传失败');
+  }
 };
 
 onMounted(() => {
@@ -144,13 +150,10 @@ onMounted(() => {
                       <img :src="formData[item.key]" alt="preview" class="config-image-preview__img" />
                     </div>
                     <ElUpload
-                      action="https://m1.apifoxmock.com/m1/8054616-7810015-default/api/uploadimage"
-                      :headers="{ apifoxToken: 'OaIfhmPmZxfKAEAd82AJgLycElfzqfuq' }"
-                      method="post"
+                      :http-request="options => handleCustomUpload(item.key, options)"
                       class="config-upload-button"
                       :auto-upload="true"
-                      :on-success="(response: any) => handleImageSuccess(item.key, response)"
-                      :on-error="handleImageError"
+                      :show-file-list="false"
                     >
                       <template #default>
                         <div class="config-upload-icon">

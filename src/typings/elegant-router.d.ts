@@ -56,6 +56,8 @@ declare module "@elegant-router/types" {
     "role": "/role";
     "user": "/user";
     "user-center": "/user-center";
+    "user-center_profile": "/user-center/profile";
+    "user-center_settings": "/user-center/settings";
   };
 
   /**
@@ -151,7 +153,8 @@ declare module "@elegant-router/types" {
     | "post_post-list"
     | "report"
     | "role"
-    | "user-center"
+    | "user-center_profile"
+    | "user-center_settings"
     | "user"
   >;
 

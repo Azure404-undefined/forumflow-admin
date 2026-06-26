@@ -237,7 +237,9 @@ const local: App.I18n.Schema = {
     dashboard: '数据统计',
     configoptions: '系统管理',
     configoptions_notice: '公告管理',
-    configoptions_config: '系统配置'
+    configoptions_config: '系统配置',
+    'user-center_profile': '个人资料',
+    'user-center_settings': '个人设置'
   },
   page: {
     login: {

@@ -201,7 +201,9 @@ const routeMap: RouteMap = {
   "report": "/report",
   "role": "/role",
   "user": "/user",
-  "user-center": "/user-center"
+  "user-center": "/user-center",
+  "user-center_profile": "/user-center/profile",
+  "user-center_settings": "/user-center/settings"
 };
 
 /**

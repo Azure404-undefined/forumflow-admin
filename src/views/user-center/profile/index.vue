@@ -1,28 +1,39 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+// 个人资料页（个人中心首页）：顶部横幅 + 下方 6 个内容标签
+import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Clock, Edit, Message, Phone } from '@element-plus/icons-vue';
-import { fetchUserProfile } from '@/service/api/profile';
-import { useRouterPush } from '@/hooks/common/router';
+import { fetchUserProfile, fetchUserStats } from '@/service/api/profile';
+import ProfileBanner from '../components/profile-banner.vue';
+import ActivityTimeline from './modules/activity-timeline.vue';
+import MyPosts from './modules/my-posts.vue';
+import MyComments from './modules/my-comments.vue';
+import MyFavorites from './modules/my-favorites.vue';
+import BrowseHistory from './modules/browse-history.vue';
+import OperationLogs from './modules/operation-logs.vue';
 
-const { routerPushByKey } = useRouterPush();
 const loading = ref(false);
 const userInfo = ref<Api.Profile.UserProfile | null>(null);
+const stats = ref<Api.Profile.UserStats | null>(null);
+// 当前选中的内容标签
+const activeTab = ref('timeline');
 
-const goToSettings = () => {
-  routerPushByKey('user-center_settings');
-};
+// 当前用户昵称：作为「我的帖子/我的评论」的作者过滤条件
+const authorName = computed(() => userInfo.value?.nickname || '');
 
-const loadProfile = async () => {
+// 并发拉取资料与统计，供横幅展示
+async function loadProfile() {
   loading.value = true;
-  const { data, error } = await fetchUserProfile();
-  if (error) {
+  const [profileRes, statsRes] = await Promise.all([fetchUserProfile(), fetchUserStats()]);
+  if (profileRes.error) {
     ElMessage.error('获取个人信息失败');
   } else {
-    userInfo.value = data;
+    userInfo.value = profileRes.data;
+  }
+  if (!statsRes.error) {
+    stats.value = statsRes.data;
   }
   loading.value = false;
-};
+}
 
 onMounted(() => {
   loadProfile();
@@ -31,161 +42,52 @@ onMounted(() => {
 
 <template>
   <div class="profile-page">
-    <ElCard v-loading="loading" class="profile-card" shadow="hover">
-      <div class="profile-header">
-        <!-- 头像 -->
-        <div class="avatar-wrapper">
-          <ElAvatar :size="100" :src="userInfo?.avatar" class="profile-avatar">
-            {{ userInfo?.nickname?.charAt(0) || 'U' }}
-          </ElAvatar>
-        </div>
+    <!-- 顶部横幅：头像/信息/统计/编辑资料按钮 -->
+    <ElCard v-loading="loading" class="profile-card card-wrapper" shadow="never">
+      <ProfileBanner :user-info="userInfo" :stats="stats" />
+    </ElCard>
 
-        <!-- 基本信息 -->
-        <div class="profile-info">
-          <div class="info-row">
-            <h2 class="nickname">{{ userInfo?.nickname || '—' }}</h2>
-            <span class="username">@{{ userInfo?.username }}</span>
-          </div>
-          <div class="info-row">
-            <ElTag v-for="role in userInfo?.roles" :key="role" size="small" type="primary" class="role-tag">
-              {{ role }}
-            </ElTag>
-          </div>
-          <div class="info-row meta">
-            <span>
-              <ElIcon><Message /></ElIcon>
-              {{ userInfo?.email || '未设置' }}
-            </span>
-            <span>
-              <ElIcon><Phone /></ElIcon>
-              {{ userInfo?.phone || '未设置' }}
-            </span>
-            <span>
-              <ElIcon><Clock /></ElIcon>
-              加入于 {{ userInfo?.createTime || '—' }}
-            </span>
-          </div>
-        </div>
-
-        <!-- 操作按钮 -->
-        <div class="profile-actions">
-          <ElButton type="primary" @click="goToSettings">
-            <ElIcon><Edit /></ElIcon>
-            编辑资料
-          </ElButton>
-        </div>
-      </div>
+    <!-- 内容标签：每个标签 lazy，首次激活才挂载并请求数据，避免一次性打多个接口 -->
+    <ElCard class="content-card card-wrapper" shadow="never">
+      <ElTabs v-model="activeTab" class="profile-tabs">
+        <ElTabPane label="动态" name="timeline" lazy>
+          <ActivityTimeline />
+        </ElTabPane>
+        <ElTabPane label="我的帖子" name="posts" lazy>
+          <MyPosts :author-name="authorName" />
+        </ElTabPane>
+        <ElTabPane label="我的评论" name="comments" lazy>
+          <MyComments :author-name="authorName" />
+        </ElTabPane>
+        <ElTabPane label="我的收藏" name="favorites" lazy>
+          <MyFavorites />
+        </ElTabPane>
+        <ElTabPane label="浏览历史" name="history" lazy>
+          <BrowseHistory />
+        </ElTabPane>
+        <ElTabPane label="操作日志" name="logs" lazy>
+          <OperationLogs />
+        </ElTabPane>
+      </ElTabs>
     </ElCard>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .profile-page {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 24px;
-  min-height: 80vh;
-}
+  flex-direction: column;
+  gap: 16px;
 
-.profile-card {
-  max-width: 800px;
-  width: 100%;
-  border-radius: 12px;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  padding: 8px 0;
-
-  .avatar-wrapper {
-    flex-shrink: 0;
+  // 让封面图铺满卡片（去掉卡片内边距，由 profile-banner 自己控制留白）
+  .profile-card {
+    :deep(.el-card__body) {
+      padding: 0;
+    }
   }
 
-  .profile-avatar {
-    border: 3px solid var(--el-color-primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .profile-info {
+  .content-card {
     flex: 1;
-    min-width: 0;
-
-    .info-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px 16px;
-      margin-bottom: 8px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    .nickname {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .username {
-      color: var(--el-text-color-secondary);
-      font-size: 14px;
-    }
-
-    .role-tag {
-      margin-right: 4px;
-    }
-
-    .meta {
-      color: var(--el-text-color-secondary);
-      font-size: 14px;
-      gap: 16px;
-
-      .el-icon {
-        margin-right: 4px;
-        vertical-align: middle;
-      }
-    }
-  }
-
-  .profile-actions {
-    flex-shrink: 0;
-  }
-}
-
-/* ===== 移动端适配 ===== */
-@media (max-width: 768px) {
-  .profile-page {
-    padding: 12px;
-  }
-
-  .profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 16px;
-
-    .profile-info {
-      .info-row {
-        justify-content: center;
-      }
-
-      .meta {
-        flex-direction: column;
-        gap: 4px;
-      }
-    }
-
-    .profile-actions {
-      width: 100%;
-      .el-button {
-        width: 100%;
-      }
-    }
   }
 }
 </style>

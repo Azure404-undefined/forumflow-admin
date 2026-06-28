@@ -135,7 +135,7 @@ onMounted(() => {
 
                 <!-- Number 类型 -->
                 <template v-else-if="item.type === 'number'">
-                  <ElInputNumber v-model="formData[item.key]" style="width: 100%" />
+                  <ElInputNumber v-model="formData[item.key]" class="full-width" />
                 </template>
 
                 <!-- Boolean 类型 -->
@@ -312,5 +312,9 @@ onMounted(() => {
   .el-input-number {
     width: 100%;
   }
+}
+// 满宽（替代原内联 width:100%）
+.full-width {
+  width: 100%;
 }
 </style>

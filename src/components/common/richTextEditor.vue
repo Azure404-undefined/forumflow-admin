@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
   <div>
     <Editor
       v-model="valueHtml"
-      style="height: 400px; width: 100%; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 5px"
+      class="rich-editor"
       :default-config="editorConfig"
       mode="default"
       @on-created="handleCreated"
@@ -114,3 +114,15 @@ onBeforeUnmount(() => {
     <Toolbar :editor="editorRef" :default-config="toolbarConfig" mode="default" />
   </div>
 </template>
+
+<style scoped>
+/* 编辑器容器：固定高度可滚动 + 边框（替代原内联样式） */
+/* height 用 !important 覆盖 wangeditor 自带的 inline height:100%（原内联样式靠 inline 优先级生效，改成 class 后需提权） */
+.rich-editor {
+  width: 100%;
+  height: 400px !important;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+}
+</style>

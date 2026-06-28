@@ -301,7 +301,7 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard-container p-16px">
-    <ElSpace direction="vertical" :size="16" fill style="width: 100%">
+    <ElSpace direction="vertical" :size="16" fill class="full-width">
       <!-- ========== 第一行：核心统计卡片 ========== -->
       <ElRow :gutter="16">
         <ElCol :xs="24" :sm="12" :md="6" :lg="3">
@@ -417,7 +417,7 @@ onUnmounted(() => {
                 <span class="font-semibold">热门帖子（综合热度）</span>
               </div>
             </template>
-            <ElTable :data="dashboardData.hotPosts" stripe style="width: 100%">
+            <ElTable :data="dashboardData.hotPosts" stripe class="full-width">
               <!--
  <el-table-column label="排名" width="50">
                 <template #default = "{ row }">
@@ -442,7 +442,7 @@ onUnmounted(() => {
                 <span class="font-semibold">热门板块（按帖子数）</span>
               </div>
             </template>
-            <ElTable :data="dashboardData.hotForums" stripe style="width: 100%">
+            <ElTable :data="dashboardData.hotForums" stripe class="full-width">
               <ElTableColumn prop="forumName" label="板块" show-overflow-tooltip />
               <ElTableColumn prop="postCount" label="帖数" width="100" />
               <ElTableColumn label="增长" width="100">
@@ -522,5 +522,9 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
   }
+}
+// 满宽（替代原内联 width:100%）
+.full-width {
+  width: 100%;
 }
 </style>

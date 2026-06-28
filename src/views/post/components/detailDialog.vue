@@ -258,7 +258,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
                   <img
                     v-if="c.authorAvatar"
                     :src="c.authorAvatar"
-                    style="width: 100%; height: 100%; object-fit: cover"
+                    class="avatar-img"
                     @error="() => (c.authorAvatar = '')"
                   />
                 </ElAvatar>
@@ -287,7 +287,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
                       <img
                         v-if="r.authorAvatar"
                         :src="r.authorAvatar"
-                        style="width: 100%; height: 100%; object-fit: cover"
+                        class="avatar-img"
                         @error="() => (r.authorAvatar = '')"
                       />
                     </ElAvatar>
@@ -541,5 +541,11 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
 }
 .dialog-footer-actions {
   text-align: right;
+}
+// 评论/回复头像图片：铺满容器并裁切（替代原内联样式）
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>

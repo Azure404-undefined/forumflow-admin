@@ -395,10 +395,10 @@ defineExpose({
       <ElForm ref="editFormRef" :model="editForm" :rules="editRules" label-position="top">
         <ElFormItem label="评论内容" prop="content">
           <!-- 如果是回复（parentId 存在），使用纯文本域；否则使用富文本编辑器（仅图片+表情） -->
-          <div v-if="isReply" style="width: 480px">
+          <div v-if="isReply" class="edit-input-box">
             <ElInput v-model="editForm.content" type="textarea" :rows="6" maxlength="1000" show-word-limit />
           </div>
-          <div v-else style="width: 480px">
+          <div v-else class="edit-input-box">
             <RichTextEditor v-model="editForm.content" :toolbar-keys="['emotion', 'uploadImage']" />
           </div>
         </ElFormItem>
@@ -559,5 +559,9 @@ defineExpose({
       align-items: flex-start;
     }
   }
+}
+// 编辑评论弹窗输入区固定宽度（替代原内联 width:480px）
+.edit-input-box {
+  width: 480px;
 }
 </style>

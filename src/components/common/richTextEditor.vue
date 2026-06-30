@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
+  <div class="editor-root">
     <Editor
       v-model="valueHtml"
       class="rich-editor"
@@ -116,6 +116,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* 根容器满宽,因为无包裹层时编辑器会收缩到内容宽度 */
+.editor-root {
+  width: 100%;
+}
+
 /* height 用 !important 覆盖 wangeditor 自带的 inline height:100%（原内联样式靠 inline 优先级生效，改成 class 后需提权） */
 .rich-editor {
   width: 100%;

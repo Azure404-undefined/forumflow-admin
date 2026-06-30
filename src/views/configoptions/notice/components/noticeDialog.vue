@@ -107,12 +107,12 @@ async function handleSubmit() {
   <ElDialog
     v-model="visible"
     :title="isCreateMode ? '新增公告' : '编辑公告'"
-    width="700px"
+    width="min(700px, 94vw)"
     top="6vh"
     :destroy-on-close="true"
   >
     <div v-loading="loading">
-      <ElForm label-width="100px" class="dialog-form">
+      <ElForm label-position="top" class="dialog-form">
         <ElFormItem label="公告标题" required>
           <ElInput v-model="form.title" placeholder="请输入公告标题" maxlength="100" show-word-limit />
         </ElFormItem>

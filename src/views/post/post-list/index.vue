@@ -446,7 +446,7 @@ onMounted(() => {
     />
 
     <!-- 新增/编辑抽屉 -->
-    <ElDrawer v-model="isOpen" :title="isEdit ? '编辑帖子' : '新增帖子'" :size="500">
+    <ElDrawer v-model="isOpen" :title="isEdit ? '编辑帖子' : '新增帖子'" size="min(500px, 90vw)">
       <ElForm ref="formRef" :model="form" label-width="auto" label-position="top" class="drawer-form">
         <ElFormItem label="标题">
           <ElInput v-model="form.title" />
@@ -457,7 +457,7 @@ onMounted(() => {
           </ElSelect>
         </ElFormItem>
         <ElFormItem label="内容">
-          <ElInput v-model="form.content" type="textarea" :rows="8" />
+          <RichTextEditor v-model:model-value="form.content" />
         </ElFormItem>
         <ElFormItem label="状态">
           <ElSelect v-model="form.status">

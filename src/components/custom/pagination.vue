@@ -49,4 +49,11 @@ function onSizeChange(size: number) {
   display: flex;
   justify-content: flex-end;
 }
+
+@media (max-width: 768px) {
+  .custom-pagination :deep(.el-pager),
+  .custom-pagination :deep(.el-pagination__sizes) {
+    display: none;
+  }
+}
 </style>

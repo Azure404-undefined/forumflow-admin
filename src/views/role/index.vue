@@ -355,7 +355,13 @@ onMounted(() => {
       </div> 
 -->
     </ElCard>
-    <ElDialog v-model="dialogFormVisible" :title="isEdit ? '编辑角色' : '新增角色'" width="500" draggable overflow>
+    <ElDialog
+      v-model="dialogFormVisible"
+      :title="isEdit ? '编辑角色' : '新增角色'"
+      width="min(500px, 94vw)"
+      draggable
+      overflow
+    >
       <ElForm :model="form">
         <ElFormItem label="角色ID" label-width="80px">
           <ElInput v-model="form.id" autocomplete="off" />
@@ -381,7 +387,7 @@ onMounted(() => {
       </template>
     </ElDialog>
 
-    <ElDialog v-model="batchDialogVisible" title="批量操作" width="500" draggable overflow>
+    <ElDialog v-model="batchDialogVisible" title="批量操作" width="min(500px, 94vw)" draggable overflow>
       <div>已选中 {{ selectedRows.length }} 项</div>
       <ElForm :model="batchForm">
         <ElFormItem label="状态" label-width="80px">
@@ -400,7 +406,7 @@ onMounted(() => {
       </template>
     </ElDialog>
 
-    <ElDialog v-model="permissionDialogVisible" title="分配权限" width="500" draggable overflow>
+    <ElDialog v-model="permissionDialogVisible" title="分配权限" width="min(500px, 94vw)" draggable overflow>
       <ElTree
         ref="treeRef"
         v-loading="dialogLoading"

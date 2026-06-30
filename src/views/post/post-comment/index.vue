@@ -49,7 +49,7 @@ const pageSize = ref(10);
 const total = ref(0);
 const loading = ref(false);
 // 折叠面板当前激活项，默认展开 '1'；如需默认收起可设为 ''
-const activeName = ref('1');
+const activeName = ref('0');
 const comments = ref<CommentInfo[]>([]);
 const selectedRows = ref<CommentInfo[]>([]);
 const tableRef = ref();
@@ -395,7 +395,7 @@ defineExpose({
       </div>
     </ElCard>
 
-    <ElDialog v-model="editVisible" title="编辑评论" width="500px">
+    <ElDialog v-model="editVisible" title="编辑评论" width="min(500px, 94vw)">
       <!-- 评论信息：所属帖子（可点击查看）+ 评论人 -->
       <div class="comment-meta">
         <ElButton
@@ -508,13 +508,9 @@ defineExpose({
   }
 
   .comment-content-cell {
-    display: -webkit-box;
     overflow: hidden;
     color: var(--el-text-color-primary);
     line-height: 1.5;
-    word-break: break-word;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
   }
 
   .post-title-link {
@@ -551,6 +547,23 @@ defineExpose({
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 12px;
+
+    :deep(.el-button) {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    :deep(.el-button > span) {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .comment-author {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
   }
 
   .table-actions {
@@ -591,6 +604,6 @@ defineExpose({
 }
 
 .edit-input-box {
-  width: 480px;
+  width: 100%;
 }
 </style>

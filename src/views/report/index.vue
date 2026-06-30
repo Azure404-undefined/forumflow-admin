@@ -430,7 +430,7 @@ onMounted(() => {
 
     <DetailDialog v-model="postDetailVisible" :post-id="currentPostId" mode="view"></DetailDialog>
 
-    <ElDialog v-model="commentDetailVisible" title="评论详情" width="500px">
+    <ElDialog v-model="commentDetailVisible" title="评论详情" width="min(500px, 94vw)">
       <div v-if="currentComment" class="comment-detail">
         <div class="comment-content">评论内容：{{ currentComment.content }}</div>
         <div class="comment-info">
@@ -583,8 +583,27 @@ onMounted(() => {
   .comment-detail {
     .comment-info {
       display: flex;
+      align-items: center;
       justify-content: space-between;
+      gap: 12px;
       margin-top: 12px;
+
+      :deep(.el-button) {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      :deep(.el-button > span) {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      > div {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
     }
   }
 

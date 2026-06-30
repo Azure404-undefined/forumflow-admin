@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
 interface Props {
@@ -11,6 +12,9 @@ interface Props {
 
 defineProps<Props>();
 
+const isPositive = ref(true);
+const rateValue = ref('');
+
 const formatValue = (val: number) => {
   if (val >= 1000000) {
     return `${(val / 1000000).toFixed(2)}M`;
@@ -20,6 +24,18 @@ const formatValue = (val: number) => {
   }
   return val.toString();
 };
+
+const growthRate = (_val: number) => {
+  // 模拟增长率计算
+  const rate = Math.random() * 20 - 10; // 随机生成 -10% 到 +10% 的增长率
+  if (rate >= 0) {
+    isPositive.value = true;
+  } else {
+    isPositive.value = false;
+  }
+  rateValue.value = `${rate.toFixed(2)}%`;
+  return rateValue.value;
+};
 </script>
 
 <template>
@@ -28,10 +44,18 @@ const formatValue = (val: number) => {
       <div class="card-icon">
         <SvgIcon :icon="icon" :color="color" :font-size="fontSize"></SvgIcon>
       </div>
+
       <div class="card-info">
         <div class="card-title">{{ title }}</div>
-        <div class="card-value">{{ formatValue(value) }}</div>
-        <!-- <p>较昨日<span>{{growthRate(42)}}</span></p> -->
+        <ElTooltip :content="formatValue(value)" placement="top">
+          <div class="card-value">{{ formatValue(value) }}</div>
+        </ElTooltip>
+        <ElTooltip :content="growthRate(-11.45)" placement="top">
+          <p>
+            较昨日
+            <span :class="{ positive: isPositive, negative: !isPositive }">{{ rateValue }}</span>
+          </p>
+        </ElTooltip>
       </div>
     </div>
   </ElCard>
@@ -59,15 +83,15 @@ const formatValue = (val: number) => {
 
   .card-icon {
     flex-shrink: 0;
-    width: 50px;
+    width: 30px;
     height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #4000a0 0%, #75beff 100%);
+    // background: linear-gradient(135deg, #4000a0 0%, #75beff 100%);
     border-radius: 8px;
     color: white;
-    font-size: 24px;
+    font-size: 30px;
 
     div {
       width: 100%;
@@ -81,6 +105,24 @@ const formatValue = (val: number) => {
   .card-info {
     flex: 1;
     min-width: 0;
+    p {
+      // display: flex;
+      // flex-direction: column;
+      margin: 0;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    p .positive {
+      // font-size: 16px;
+      color: var(--el-color-success);
+    }
+    p .negative {
+      // font-size: 16px;
+      color: var(--el-color-danger);
+    }
   }
 
   .card-title {

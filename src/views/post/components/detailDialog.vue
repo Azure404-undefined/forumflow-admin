@@ -123,9 +123,7 @@ async function doDelete() {
     ElMessage.success('删除成功');
     close();
     emit('updated');
-  } catch {
-    // cancel or fail
-  }
+  } catch {}
 }
 
 // 编辑并保存
@@ -171,9 +169,7 @@ async function handleDeleteComment(c: any) {
     await deleteComment(c.id);
     await handleCommentChanged();
     ElMessage.success('评论已删除');
-  } catch {
-    // canceled
-  }
+  } catch {}
 }
 
 const statusLabel = (s: Api.Post.PostStatus | undefined) => {
@@ -195,7 +191,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
 </script>
 
 <template>
-  <ElDialog v-model="visible" width="1000px" top="6vh" :destroy-on-close="true">
+  <ElDialog v-model="visible" width="min(1000px, 94vw)" top="6vh" :destroy-on-close="true">
     <template #header>
       <div class="dialog-title">帖子详情</div>
     </template>
@@ -319,31 +315,39 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
       <!-- 右侧互动及操作 -->
       <div class="col right">
         <div class="stats-box">
-          <div class="stat">
-            查看
-            <br />
-            <strong>{{ post?.viewCount ?? 0 }}</strong>
+          <div class="stat-card views" title="查看">
+            <SvgIcon icon="mdi:eye-outline" class="stat-icon" />
+            <span class="stat-value">{{ post?.viewCount ?? 0 }}</span>
           </div>
-          <div class="stat">
-            点赞
-            <br />
-            <strong>{{ post?.likeCount ?? 0 }}</strong>
+          <div class="stat-card likes" title="点赞">
+            <SvgIcon icon="mdi:thumb-up-outline" class="stat-icon" />
+            <span class="stat-value">{{ post?.likeCount ?? 0 }}</span>
           </div>
-          <div class="stat">
-            评论
-            <br />
-            <strong>{{ post?.commentCount ?? 0 }}</strong>
+          <div class="stat-card comments" title="评论">
+            <SvgIcon icon="mdi:comment-outline" class="stat-icon" />
+            <span class="stat-value">{{ post?.commentCount ?? 0 }}</span>
           </div>
         </div>
 
         <div class="ops-box" :class="{ 'box-display': mode === 'view' ? true : false }">
-          <ElButton v-if="post?.status === 'pending'" type="success" @click="() => doAudit(true)">通过</ElButton>
-          <ElButton v-if="post?.status === 'pending'" type="warning" @click="() => doAudit(false)">驳回</ElButton>
-          <ElButton type="danger" @click="doDelete">删除</ElButton>
+          <ElButton v-if="post?.status === 'pending'" type="success" @click="() => doAudit(true)">
+            <SvgIcon icon="ic:round-check" class="mr-4px text-16px" />
+            通过
+          </ElButton>
+          <ElButton v-if="post?.status === 'pending'" type="warning" @click="() => doAudit(false)">
+            <SvgIcon icon="ic:round-close" class="mr-4px text-16px" />
+            驳回
+          </ElButton>
+          <ElButton type="danger" @click="doDelete">
+            <SvgIcon icon="ic:round-delete" class="mr-4px text-16px" />
+            删除
+          </ElButton>
           <ElButton type="info" @click="toggleTop">
+            <SvgIcon icon="ic:round-vertical-align-top" class="mr-4px text-16px" />
             {{ post?.top === 1 ? '取消置顶' : '置顶' }}
           </ElButton>
           <ElButton type="info" @click="toggleEssence">
+            <SvgIcon icon="ic:round-star" class="mr-4px text-16px" />
             {{ post?.essence === 1 ? '取消加精' : '加精' }}
           </ElButton>
         </div>
@@ -506,20 +510,33 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
   .stats-box {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .stat-card {
+    display: flex;
     align-items: center;
-    padding: 12px;
-    border: 1px solid #f0f0f0;
-    border-radius: 6px;
-    .stat {
-      text-align: center;
-      /* color: #666; */
-      strong {
-        font-size: 18px;
-        display: block;
-        margin-top: 6px;
-      }
-    }
+    justify-content: center;
+    gap: 6px;
+  }
+
+  :deep(.stat-icon) {
+    flex: 0 0 auto;
+    font-size: 18px;
+  }
+  .stat-card.views :deep(.stat-icon) {
+    color: var(--el-color-primary-light-3);
+  }
+  .stat-card.likes :deep(.stat-icon) {
+    color: var(--el-color-warning-light-3);
+  }
+  .stat-card.comments :deep(.stat-icon) {
+    color: var(--el-color-success-light-3);
+  }
+  .stat-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--el-text-color-secondary);
   }
   .ops-box {
     margin-top: 12px;
@@ -534,6 +551,54 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
     display: none;
   }
 }
+
+@media (max-width: 768px) {
+  .detail-inner {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 12px;
+  }
+  .col.left {
+    order: 1;
+  }
+  .col.right {
+    order: 2;
+  }
+  .col.center {
+    order: 3;
+    max-height: none;
+    overflow: visible;
+  }
+  .col.left .author-box {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 8px 4px;
+  }
+  .col.left :deep(.el-avatar) {
+    width: 56px !important;
+    height: 56px !important;
+    line-height: 56px !important;
+  }
+
+  .col.right .stats-box {
+    flex-direction: row;
+    width: 50%;
+  }
+  .col.right .stat-card {
+    flex: 1;
+  }
+
+  .col.right .ops-box {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .col.right .ops-box .el-button {
+    flex: 1 1 auto;
+    width: auto;
+    margin: 4px;
+  }
+}
 .deleted-tag {
   border: 1px dashed #f56c6c !important;
   color: #f56c6c !important;
@@ -542,7 +607,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
 .dialog-footer-actions {
   text-align: right;
 }
-// 评论/回复头像图片：铺满容器并裁切（替代原内联样式）
+
 .avatar-img {
   width: 100%;
   height: 100%;

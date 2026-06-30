@@ -501,16 +501,23 @@ function handleIconChange(uploadFile: UploadFile) {
  * - inner: 变为目标节点的最后一个子项
  * - before/after: 在目标父级的序列中计算新的 sort
  */
-function resolveDropSort(dropData: ForumInfo, targetParentId: string | null, dropType: TreeDropType) {
-  if (dropType === 'inner') {
-    return (dropData.children?.length || 0) + 1;
+function resolveDropSort(
+  dragData: ForumInfo,
+  dropData: ForumInfo,
+  options: { targetParentId: string | null; dropType: TreeDropType }
+) {
+  if (options.dropType === 'inner') {
+    // 作为 dropData 的子节点追加到末尾（排除被拖拽节点自身）
+    const children = getSiblingList(dropData.id).filter(item => item.id !== dragData.id);
+    return children.length + 1;
   }
 
-  const siblings = getSiblingList(targetParentId).filter(item => item.id !== dropData.id);
+  // before/after：在目标父级的兄弟序列里定位 dropData（排除被拖拽节点自身）
+  const siblings = getSiblingList(options.targetParentId).filter(item => item.id !== dragData.id);
   const dropIndex = siblings.findIndex(item => item.id === dropData.id);
   if (dropIndex === -1) return dropData.sort;
 
-  return dropType === 'before' ? dropIndex + 1 : dropIndex + 2;
+  return options.dropType === 'before' ? dropIndex + 1 : dropIndex + 2;
 }
 
 /**
@@ -525,7 +532,7 @@ async function handleNodeDrop(draggingNode: TreeDropNode, dropNode: TreeDropNode
     await moveForum({
       id: dragData.id,
       targetParentId,
-      targetSort: resolveDropSort(dropData, targetParentId, dropType)
+      targetSort: resolveDropSort(dragData, dropData, { targetParentId, dropType })
     });
     ElMessage.success('板块位置已更新');
     await getForumTree(dragData.id);

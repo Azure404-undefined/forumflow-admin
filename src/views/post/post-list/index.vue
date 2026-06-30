@@ -344,7 +344,16 @@ onMounted(() => {
             <a class="post-title-link" @click="() => detailOpen(row)">{{ row.title }}</a>
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="authorName" label="作者" width="100" />
+        <ElTableColumn label="作者" width="120">
+          <template #default="{ row }">
+            <div class="author-cell">
+              <ElAvatar :size="30" :src="row.authorAvatar || undefined">
+                {{ row.authorName?.slice(0, 1) || '佚' }}
+              </ElAvatar>
+              <div class="author-name">{{ row.authorName }}</div>
+            </div>
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="forumName" label="版块" width="100" />
         <ElTableColumn label="状态" width="120" align="center">
           <template #default="{ row }">
@@ -537,6 +546,23 @@ onMounted(() => {
       cursor: pointer;
       text-decoration: none;
     }
+  }
+
+  // 作者列：头像 + 名称（参考评论管理）
+  .author-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 12px;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .author-name {
+    width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .meta {

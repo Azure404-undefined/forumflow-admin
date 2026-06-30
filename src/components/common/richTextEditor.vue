@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import '@wangeditor/editor/dist/css/style.css'; // 引入核心 css
+import '@wangeditor/editor/dist/css/style.css';
 import { nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { ElMessage } from 'element-plus';
@@ -116,7 +116,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* 编辑器容器：固定高度可滚动 + 边框（替代原内联样式） */
 /* height 用 !important 覆盖 wangeditor 自带的 inline height:100%（原内联样式靠 inline 优先级生效，改成 class 后需提权） */
 .rich-editor {
   width: 100%;

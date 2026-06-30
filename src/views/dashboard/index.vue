@@ -1,9 +1,37 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import * as echarts from 'echarts';
 import { fetchDashboardData } from '@/service/api/dashboard.js';
+import { useAuthStore } from '@/store/modules/auth';
+import SvgIcon from '@/components/custom/svg-icon.vue';
 import StatisticCard from './components/StatisticCard.vue';
+
+const authStore = useAuthStore();
+
+// 数据加载状态：true 时显示骨架屏，数据就绪后为 false
+const loading = ref(true);
+
+// 头部问候卡片：问候语（按当前时段）
+const greeting = computed(() => {
+  const hour = new Date().getHours();
+  if (hour < 6) return '夜深了';
+  if (hour < 9) return '早上好';
+  if (hour < 12) return '上午好';
+  if (hour < 14) return '中午好';
+  if (hour < 18) return '下午好';
+  return '晚上好';
+});
+
+// 头部问候卡片：当前日期（真实日期）
+const today = computed(() => {
+  const d = new Date();
+  const week = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${week}`;
+});
+
+// 头部问候卡片：天气（死数据）
+const weather = { desc: '多云转晴', temp: '25℃' };
 
 // 初始化数据
 const dashboardData = reactive<Api.Dashboard.DashboardData>({
@@ -281,6 +309,10 @@ onMounted(async () => {
     dashboardData.hotForums.sort((a, b) => b.postCount - a.postCount);
   }
 
+  // 数据就绪，关闭骨架屏；等 ElSkeleton 的 #default 渲染出图表容器后再初始化 echarts
+  loading.value = false;
+  await nextTick();
+
   initCharts();
   // 在所有图表初始化完成后，统一监听窗口变化进行 resize
   window.addEventListener('resize', resizeCharts);
@@ -301,174 +333,236 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard-container p-16px">
-    <ElSpace direction="vertical" :size="16" fill class="full-width">
-      <!-- ========== 第一行：核心统计卡片 ========== -->
-      <ElRow :gutter="16">
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard
-            title="总用户数"
-            :value="dashboardData.core.totalUsers"
-            icon="rivet-icons:user-group-solid"
-            color="#00bcff"
-          />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard title="日活跃用户" :value="dashboardData.core.dau" icon="lets-icons:line-up" color="#82ff00" />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard title="月活跃用户" :value="dashboardData.core.mau" icon="stash:user-clock" color="#ff9700" />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard title="总帖数" :value="dashboardData.core.totalPosts" icon="iconoir:post" color="#ffec62" />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard
-            title="总评论数"
-            :value="dashboardData.core.totalComments"
-            icon="mingcute:comment-line"
-            color="#e462ff"
-          />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard
-            title="今日新增帖"
-            :value="dashboardData.core.newPostsToday"
-            icon="streamline-ultimate:pen-write"
-            color="skyblue"
-          />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard
-            title="今日新增评"
-            :value="dashboardData.core.newCommentsToday"
-            icon="mdi:comment-text-outline"
-            color="#50e149"
-          />
-        </ElCol>
-        <ElCol :xs="24" :sm="12" :md="6" :lg="3">
-          <StatisticCard
-            title="待处理举报"
-            :value="dashboardData.core.pendingReports"
-            icon="ic:round-report"
-            color="orange"
-          />
-        </ElCol>
-      </ElRow>
+    <ElSkeleton :loading="loading" animated>
+      <!-- 加载骨架：与真实内容同布局 -->
+      <template #template>
+        <ElSpace direction="vertical" :size="16" fill class="full-width">
+          <ElSkeletonItem variant="rect" class="sk-greeting" />
+          <ElRow :gutter="16">
+            <ElCol v-for="i in 8" :key="i" :xs="12" :sm="12" :md="6" :lg="3" class="mb-16px">
+              <ElSkeletonItem variant="rect" class="sk-stat" />
+            </ElCol>
+          </ElRow>
+          <ElRow :gutter="16">
+            <ElCol :xs="24" :sm="8" :lg="9" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+            <ElCol :xs="24" :sm="8" :lg="5" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+            <ElCol :xs="24" :sm="8" :lg="5" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+            <ElCol :xs="24" :sm="8" :lg="5" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+          </ElRow>
+          <ElRow :gutter="16">
+            <ElCol :xs="24" :sm="24" :lg="9" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+            <ElCol :xs="24" :sm="24" :lg="7" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+            <ElCol :xs="24" :sm="24" :lg="8" class="mb-16px"><ElSkeletonItem variant="rect" class="sk-chart" /></ElCol>
+          </ElRow>
+        </ElSpace>
+      </template>
 
-      <!-- ========== 第二行：用户活跃趋势 + 用户画像 ========== -->
-      <ElRow :gutter="16">
-        <!-- 用户活跃趋势 (lg: 9, md: 24, xs: 24) -->
-        <ElCol :xs="24" :sm="24" :md="24" :lg="9" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-between">
-                <span class="font-semibold">用户活跃趋势</span>
+      <template #default>
+        <ElSpace direction="vertical" :size="16" fill class="full-width">
+          <!-- ========== 头部：问候卡片 ========== -->
+          <ElCard class="greeting-card card-wrapper">
+            <div class="greeting-inner">
+              <!-- 左：问候 + 寒暄（两行） -->
+              <div class="greeting-text">
+                <h3 class="greeting-title">{{ greeting }}，{{ authStore.userInfo.userName }}！</h3>
+                <p class="greeting-subtitle">今天也要元气满满，愿你拥有美好的一天～</p>
               </div>
-            </template>
-            <div ref="activeTrendChartRef" class="chart-container" />
+              <!-- 右：日期 + 天气预报 + 温度 -->
+              <div class="greeting-weather">
+                <span class="greeting-date">{{ today }}</span>
+                <div class="greeting-weather-line">
+                  <SvgIcon icon="mdi:weather-partly-cloudy" :font-size="22" color="#fbbf24" />
+                  <span class="greeting-desc">{{ weather.desc }}</span>
+                  <span class="greeting-temp">{{ weather.temp }}</span>
+                </div>
+              </div>
+            </div>
           </ElCard>
-        </ElCol>
 
-        <!-- 用户画像 (lg: 5/5/5, md: 24, xs: 24) -->
-        <!-- 性别分布饼图 -->
-        <ElCol :xs="24" :sm="8" :md="8" :lg="5" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-center">
-                <span class="text-sm font-semibold">性别分布</span>
-              </div>
-            </template>
-            <div ref="genderChartRef" class="chart-container" />
-          </ElCard>
-        </ElCol>
+          <!-- ========== 第一行：核心统计卡片 ========== -->
+          <ElRow :gutter="16">
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="总用户数"
+                :value="dashboardData.core.totalUsers"
+                icon="rivet-icons:user-group-solid"
+                color="#00bcff"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="日活跃用户"
+                :value="dashboardData.core.dau"
+                icon="lets-icons:line-up"
+                color="#82ff00"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="月活跃用户"
+                :value="dashboardData.core.mau"
+                icon="stash:user-clock"
+                color="#ff9700"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="总帖数"
+                :value="dashboardData.core.totalPosts"
+                icon="iconoir:post"
+                color="#ffec62"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="总评论数"
+                :value="dashboardData.core.totalComments"
+                icon="mingcute:comment-line"
+                color="#e462ff"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="今日新增帖"
+                :value="dashboardData.core.newPostsToday"
+                icon="streamline-ultimate:pen-write"
+                color="skyblue"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="今日新增评"
+                :value="dashboardData.core.newCommentsToday"
+                icon="mdi:comment-text-outline"
+                color="#50e149"
+              />
+            </ElCol>
+            <ElCol :xs="24" :sm="12" :md="6" :lg="3">
+              <StatisticCard
+                title="待处理举报"
+                :value="dashboardData.core.pendingReports"
+                icon="ic:round-report"
+                color="orange"
+              />
+            </ElCol>
+          </ElRow>
 
-        <!-- 年龄分布饼图 -->
-        <ElCol :xs="24" :sm="8" :md="8" :lg="5" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-center">
-                <span class="text-sm font-semibold">年龄分布</span>
-              </div>
-            </template>
-            <div ref="ageChartRef" class="chart-container" />
-          </ElCard>
-        </ElCol>
-
-        <!-- 设备分布饼图 -->
-        <ElCol :xs="24" :sm="8" :md="8" :lg="5" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-center">
-                <span class="text-sm font-semibold">设备分布</span>
-              </div>
-            </template>
-            <div ref="deviceChartRef" class="chart-container" />
-          </ElCard>
-        </ElCol>
-      </ElRow>
-
-      <!-- ========== 第三行：热门帖子 + 热门板块 + 发帖时段分布 ========== -->
-      <ElRow :gutter="16">
-        <!-- 热门帖子 (lg: 9, md: 24, xs: 24) -->
-        <ElCol :xs="24" :sm="24" :md="24" :lg="9" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-between">
-                <span class="font-semibold">热门帖子（综合热度）</span>
-              </div>
-            </template>
-            <ElTable :data="dashboardData.hotPosts" stripe class="full-width">
-              <!--
- <el-table-column label="排名" width="50">
-                <template #default = "{ row }">
-                  <div>{{ dashboardData.hotPosts.length }}</div>
+          <!-- ========== 第二行：用户活跃趋势 + 用户画像 ========== -->
+          <ElRow :gutter="16">
+            <!-- 用户活跃趋势 (lg: 9, md: 24, xs: 24) -->
+            <ElCol :xs="24" :sm="24" :md="24" :lg="9" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-between">
+                    <span class="font-semibold">用户活跃趋势</span>
+                  </div>
                 </template>
-              </el-table-column> 
--->
-              <ElTableColumn prop="title" label="标题" show-overflow-tooltip />
-              <ElTableColumn prop="viewCount" label="浏览" width="70" />
-              <ElTableColumn prop="likeCount" label="点赞" width="70" />
-              <ElTableColumn prop="commentCount" label="评论" width="70" />
-              <ElTableColumn prop="hotScore" label="热度分" width="70" />
-            </ElTable>
-          </ElCard>
-        </ElCol>
+                <div ref="activeTrendChartRef" class="chart-container" />
+              </ElCard>
+            </ElCol>
 
-        <!-- 热门板块 (lg: 7, md: 24, xs: 24) -->
-        <ElCol :xs="24" :sm="24" :md="24" :lg="7" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-between">
-                <span class="font-semibold">热门板块（按帖子数）</span>
-              </div>
-            </template>
-            <ElTable :data="dashboardData.hotForums" stripe class="full-width">
-              <ElTableColumn prop="forumName" label="板块" show-overflow-tooltip />
-              <ElTableColumn prop="postCount" label="帖数" width="100" />
-              <ElTableColumn label="增长" width="100">
-                <template #default="{ row }">
-                  <span class="down" :class="{ up: growthRate(row.growthRate) }">
-                    {{ toFixedResponse(row.growthRate) }}
-                  </span>
+            <!-- 用户画像 (lg: 5/5/5, md: 24, xs: 24) -->
+            <!-- 性别分布饼图 -->
+            <ElCol :xs="24" :sm="8" :md="8" :lg="5" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-center">
+                    <span class="text-sm font-semibold">性别分布</span>
+                  </div>
                 </template>
-              </ElTableColumn>
-            </ElTable>
-          </ElCard>
-        </ElCol>
+                <div ref="genderChartRef" class="chart-container" />
+              </ElCard>
+            </ElCol>
 
-        <!-- 发帖时段分布 (lg: 8, md: 24, xs: 24) -->
-        <ElCol :xs="24" :sm="24" :md="24" :lg="8" class="mb-16px">
-          <ElCard class="chart-card">
-            <template #header>
-              <div class="flex-between">
-                <span class="font-semibold">发帖时段分布</span>
-              </div>
-            </template>
-            <div ref="hourlyPostsChartRef" class="chart-container" />
-          </ElCard>
-        </ElCol>
-      </ElRow>
-    </ElSpace>
+            <!-- 年龄分布饼图 -->
+            <ElCol :xs="24" :sm="8" :md="8" :lg="5" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-center">
+                    <span class="text-sm font-semibold">年龄分布</span>
+                  </div>
+                </template>
+                <div ref="ageChartRef" class="chart-container" />
+              </ElCard>
+            </ElCol>
+
+            <!-- 设备分布饼图 -->
+            <ElCol :xs="24" :sm="8" :md="8" :lg="5" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-center">
+                    <span class="text-sm font-semibold">设备分布</span>
+                  </div>
+                </template>
+                <div ref="deviceChartRef" class="chart-container" />
+              </ElCard>
+            </ElCol>
+          </ElRow>
+
+          <!-- ========== 第三行：热门帖子 + 热门板块 + 发帖时段分布 ========== -->
+          <ElRow :gutter="16">
+            <!-- 热门帖子 (lg: 9, md: 24, xs: 24) -->
+            <ElCol :xs="24" :sm="24" :md="24" :lg="9" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-between">
+                    <span class="font-semibold">热门帖子（综合热度）</span>
+                  </div>
+                </template>
+                <ElTable :data="dashboardData.hotPosts" stripe class="full-width">
+                  <ElTableColumn label="排名" width="60">
+                    <template #default="{ $index }">
+                      <span class="rank-badge" :class="$index < 3 ? `rank-badge--${$index + 1}` : ''">
+                        {{ $index + 1 }}
+                      </span>
+                    </template>
+                  </ElTableColumn>
+                  <ElTableColumn prop="title" label="标题" show-overflow-tooltip />
+                  <ElTableColumn prop="viewCount" label="浏览" width="50" />
+                  <ElTableColumn prop="likeCount" label="点赞" width="50" />
+                  <ElTableColumn prop="commentCount" label="评论" width="50" />
+                  <ElTableColumn prop="hotScore" label="热度分" width="50" />
+                </ElTable>
+              </ElCard>
+            </ElCol>
+
+            <!-- 热门板块 (lg: 7, md: 24, xs: 24) -->
+            <ElCol :xs="24" :sm="24" :md="24" :lg="7" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-between">
+                    <span class="font-semibold">热门板块（按帖子数）</span>
+                  </div>
+                </template>
+                <ElTable :data="dashboardData.hotForums" stripe class="full-width">
+                  <ElTableColumn prop="forumName" label="板块" show-overflow-tooltip />
+                  <ElTableColumn prop="postCount" label="帖数" width="100" />
+                  <ElTableColumn label="增长" width="100">
+                    <template #default="{ row }">
+                      <span class="down" :class="{ up: growthRate(row.growthRate) }">
+                        {{ toFixedResponse(row.growthRate) }}
+                      </span>
+                    </template>
+                  </ElTableColumn>
+                </ElTable>
+              </ElCard>
+            </ElCol>
+
+            <!-- 发帖时段分布 (lg: 8, md: 24, xs: 24) -->
+            <ElCol :xs="24" :sm="24" :md="24" :lg="8" class="mb-16px">
+              <ElCard class="chart-card">
+                <template #header>
+                  <div class="flex-between">
+                    <span class="font-semibold">发帖时段分布</span>
+                  </div>
+                </template>
+                <div ref="hourlyPostsChartRef" class="chart-container" />
+              </ElCard>
+            </ElCol>
+          </ElRow>
+        </ElSpace>
+      </template>
+    </ElSkeleton>
   </div>
 </template>
 
@@ -522,9 +616,121 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
   }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+  }
+
+  .rank-badge--1,
+  .rank-badge--2,
+  .rank-badge--3 {
+    width: 22px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .rank-badge--1 {
+    background: gold;
+  }
+
+  .rank-badge--2 {
+    background: #b6bcc6;
+  }
+
+  .rank-badge--3 {
+    background: #cd8a4b;
+  }
+
+  // 含固定列宽表格的那一行（热门帖子 / 热门板块 / 发帖时段）在窄屏下，
+  // 表格列宽之和形成的 min-content 会通过 flex 的默认 min-width:auto 撑大 el-row/el-col，
+  // 导致该行卡片比上方图表卡片更宽并溢出边界。给 flex 子项加 min-width:0 允许其收缩
+  // 容器宽度（表格列自适应，必要时内部横向滚动），从而所有卡片等宽、不溢出。
+  :deep(.el-row),
+  :deep(.el-col) {
+    min-width: 0;
+  }
 }
-// 满宽（替代原内联 width:100%）
+
+.greeting-card {
+  .greeting-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .greeting-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .greeting-subtitle {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: #999;
+  }
+  .greeting-weather {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 6px;
+  }
+  .greeting-weather-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .greeting-date,
+  .greeting-desc {
+    font-size: 14px;
+    color: #666;
+  }
+  .greeting-temp {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 639px) {
+    .greeting-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .greeting-weather {
+      align-items: flex-start;
+    }
+  }
+}
+
+.sk-greeting {
+  width: 100%;
+  height: 88px;
+  border-radius: 8px;
+}
+.sk-stat {
+  width: 100%;
+  height: 84px;
+  border-radius: 8px;
+}
+.sk-chart {
+  width: 100%;
+  height: 360px;
+  border-radius: 8px;
+}
+
 .full-width {
   width: 100%;
+
+  > :deep(.el-space__item) {
+    width: 100%;
+    min-width: 0;
+  }
 }
 </style>

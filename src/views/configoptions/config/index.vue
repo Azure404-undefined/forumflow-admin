@@ -313,7 +313,7 @@ onMounted(() => {
     width: 100%;
   }
 }
-// 满宽（替代原内联 width:100%）
+
 .full-width {
   width: 100%;
 }

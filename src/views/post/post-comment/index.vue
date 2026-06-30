@@ -61,8 +61,11 @@ const editLoading = ref(false);
 interface EditForm {
   id: string;
   content: string;
+  postId: string;
+  postTitle?: string;
+  authorName: string;
 }
-const editForm = reactive<EditForm>({ id: '', content: '' });
+const editForm = reactive<EditForm>({ id: '', content: '', postId: '', postTitle: '', authorName: '' });
 /** 详情弹窗相关 */
 const detailVisible = ref(false);
 const detailPostId = ref<string>('');
@@ -213,6 +216,9 @@ async function handleBatchDelete() {
 function openEdit(row: CommentInfo) {
   editForm.id = row.id;
   editForm.content = row.content;
+  editForm.postId = row.postId;
+  editForm.postTitle = row.postTitle || '';
+  editForm.authorName = row.authorName;
   // 根据 parentId 判断是否为对评论的回复
   isReply.value = Boolean(row.parentId);
   editVisible.value = true;
@@ -285,11 +291,9 @@ defineExpose({
     <ElCard class="content-panel">
       <div class="card-header">
         <div class="title-wrap">
-          <!-- <ElText class="title" size="large">{{ title }}</ElText> -->
-          <!-- <ElTag v-if="compact" type="info" effect="plain">{{ total }}</ElTag> -->
+          <ElText class="mx-1" size="large">评论列表</ElText>
         </div>
         <div class="actions-space">
-          <!-- 状态筛选已移入折叠搜索栏，头部只保留常用操作 -->
           <ElButton type="primary" :loading="loading" @click="getCommentList">刷新</ElButton>
           <ElButton type="success" :disabled="!selectedCount" @click="() => handleBatchAudit('published')">
             批量通过
@@ -313,8 +317,8 @@ defineExpose({
       >
         <ElTableColumn type="selection" fixed :reserve-selection="true" width="50" />
 
-        <!-- 作者列：头像 + 名称-->
-        <ElTableColumn label="作者" width="120">
+        <!-- 评论人列：头像 + 名称-->
+        <ElTableColumn label="评论人" width="120">
           <template #default="{ row }">
             <div class="author-cell">
               <ElAvatar :size="30" :src="row.authorAvatar || undefined">
@@ -392,6 +396,23 @@ defineExpose({
     </ElCard>
 
     <ElDialog v-model="editVisible" title="编辑评论" width="500px">
+      <!-- 评论信息：所属帖子（可点击查看）+ 评论人 -->
+      <div class="comment-meta">
+        <ElButton
+          link
+          type="default"
+          @click="
+            () => {
+              detailPostId = editForm.postId;
+              detailVisible = true;
+            }
+          "
+        >
+          所属帖子：{{ editForm.postTitle || '未知帖子' }}
+        </ElButton>
+        <div class="comment-author">评论人：{{ editForm.authorName }}</div>
+      </div>
+
       <ElForm ref="editFormRef" :model="editForm" :rules="editRules" label-position="top">
         <ElFormItem label="评论内容" prop="content">
           <!-- 如果是回复（parentId 存在），使用纯文本域；否则使用富文本编辑器（仅图片+表情） -->
@@ -524,6 +545,14 @@ defineExpose({
     text-align: center;
   }
 
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
   .table-actions {
     display: flex;
     align-items: center;
@@ -560,7 +589,7 @@ defineExpose({
     }
   }
 }
-// 编辑评论弹窗输入区固定宽度（替代原内联 width:480px）
+
 .edit-input-box {
   width: 480px;
 }

@@ -56,7 +56,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base',
     meta: {
       title: 'configoptions',
-      i18nKey: 'route.configoptions'
+      i18nKey: 'route.configoptions',
+      icon: 'mdi:cog-outline',
+      order: 7
     },
     children: [
       {
@@ -65,7 +67,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.configoptions_config',
         meta: {
           title: 'configoptions_config',
-          i18nKey: 'route.configoptions_config'
+          i18nKey: 'route.configoptions_config',
+          icon: 'icon-park-outline:setting-config'
         }
       },
       {
@@ -74,7 +77,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.configoptions_notice',
         meta: {
           title: 'configoptions_notice',
-          i18nKey: 'route.configoptions_notice'
+          i18nKey: 'route.configoptions_notice',
+          icon: 'mdi:bell-outline'
         }
       }
     ]
@@ -85,7 +89,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.dashboard',
     meta: {
       title: 'dashboard',
-      i18nKey: 'route.dashboard'
+      i18nKey: 'route.dashboard',
+      icon: 'mdi:chart-box-outline',
+      order: 2
     }
   },
   {
@@ -95,7 +101,7 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'home',
       i18nKey: 'route.home',
-      icon: 'mdi:monitor-dashboard',
+      icon: 'mdi:home-outline',
       order: 1
     }
   },
@@ -192,7 +198,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base',
     meta: {
       title: 'post',
-      i18nKey: 'route.post'
+      i18nKey: 'route.post',
+      icon: 'mdi:post-outline',
+      order: 5
     },
     children: [
       {
@@ -201,7 +209,9 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.post_post-comment',
         meta: {
           title: 'post_post-comment',
-          i18nKey: 'route.post_post-comment'
+          i18nKey: 'route.post_post-comment',
+          order: 3,
+          icon: 'mdi:comment-outline'
         }
       },
       {
@@ -210,7 +220,9 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.post_post-forums',
         meta: {
           title: 'post_post-forums',
-          i18nKey: 'route.post_post-forums'
+          i18nKey: 'route.post_post-forums',
+          order: 2,
+          icon: 'tdesign:forum'
         }
       },
       {
@@ -219,7 +231,9 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.post_post-list',
         meta: {
           title: 'post_post-list',
-          i18nKey: 'route.post_post-list'
+          i18nKey: 'route.post_post-list',
+          order: 1,
+          icon: 'iconoir:post'
         }
       }
     ]
@@ -230,7 +244,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.report',
     meta: {
       title: 'report',
-      i18nKey: 'route.report'
+      i18nKey: 'route.report',
+      icon: 'mdi:flag-outline',
+      order: 6
     }
   },
   {
@@ -239,7 +255,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.role',
     meta: {
       title: 'role',
-      i18nKey: 'route.role'
+      i18nKey: 'route.role',
+      icon: 'mdi:account-key-outline',
+      order: 4
     }
   },
   {
@@ -248,7 +266,9 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.user',
     meta: {
       title: 'user',
-      i18nKey: 'route.user'
+      i18nKey: 'route.user',
+      icon: 'mdi:account-group-outline',
+      order: 3
     }
   },
   {
@@ -267,7 +287,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.user-center_profile',
         meta: {
           title: 'user-center_profile',
-          i18nKey: 'route.user-center_profile'
+          i18nKey: 'route.user-center_profile',
+          icon: 'mdi:account-outline'
         }
       },
       {
@@ -276,7 +297,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.user-center_settings',
         meta: {
           title: 'user-center_settings',
-          i18nKey: 'route.user-center_settings'
+          i18nKey: 'route.user-center_settings',
+          icon: 'mdi:cog-outline'
         }
       }
     ]

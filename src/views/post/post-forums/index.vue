@@ -1,18 +1,4 @@
 <script setup lang="ts">
-/*
-  板块管理组件（PostForums）
-
-  功能概述：
-  - 显示可拖拽排序的板块树
-  - 支持新增/编辑/删除板块（含父子关系、排序）
-  - 支持上传并预览 SVG 图标
-  - 与后端 API 交互：fetchForumTree / addForum / editForum / deleteForum / moveForum
-
-  实现方式：
-  - 使用 Vue 3 `<script setup>` + Composition API
-  - 使用 Element Plus 组件（ElTree、ElForm、ElUpload 等）
-*/
-
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { watchDebounced } from '@vueuse/core';
 import { ElMessage, ElMessageBox } from 'element-plus';

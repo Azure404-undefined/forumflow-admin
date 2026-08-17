@@ -2,19 +2,18 @@
   "name": "@sa/elp",
   "type": "module",
   "version": "1.4.0",
-  "description": "A fresh and elegant admin template, based on Vue3、Vite7、rolldown-vite、TypeScript、ElementPlus and UnoCSS. 一个基于Vue3、Vite7、rolldown-vite、TypeScript、ElementPlus and UnoCSS的清新优雅的中后台模版。",
+  "description": "A forum / content community admin system based on SoybeanAdmin ElementPlus. 基于 SoybeanAdmin ElementPlus 二开的论坛/内容社区后台管理系统。",
   "author": {
-    "name": "Soybean",
-    "email": "soybeanjs@outlook.com",
-    "url": "https://github.com/soybeanjs"
+    "name": "Azure404-undefined",
+    "url": "https://github.com/Azure404-undefined"
   },
   "license": "MIT",
-  "homepage": "https://github.com/soybeanjs/soybean-admin",
+  "homepage": "https://github.com/Azure404-undefined/soybean-admin-element-plus",
   "repository": {
-    "url": "https://github.com/soybeanjs/soybean-admin.git"
+    "url": "https://github.com/Azure404-undefined/soybean-admin-element-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/soybeanjs/soybean-admin/issues"
+    "url": "https://github.com/Azure404-undefined/soybean-admin-element-plus/issues"
   },
   "keywords": [
     "Vue3 admin ",
@@ -40,7 +39,6 @@
     "dev:prod": "vite --mode prod",
     "gen-route": "sa gen-route",
     "lint": "eslint . --fix",
-    "postbuild": "sa print-soybean",
     "prepare": "simple-git-hooks",
     "preview": "vite preview",
     "release": "sa release",
@@ -134,5 +132,5 @@
     "commit-msg": "pnpm sa git-commit-verify",
     "pre-commit": "pnpm typecheck && pnpm lint && git diff --exit-code"
   },
-  "website": "https://elp.soybeanjs.cn"
+  "website": "https://github.com/Azure404-undefined/soybean-admin-element-plus"
 }

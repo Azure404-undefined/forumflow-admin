@@ -37,3 +37,9 @@ package-lock.json
 yarn.lock
 
 .VSCodeCounter
+
+# Dev artifacts & local env
+.playwright-mcp
+.env
+.env.*
+!.env.example

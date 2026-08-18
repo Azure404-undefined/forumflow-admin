@@ -35,12 +35,21 @@ const purifiedHTML = computed(() => {
 });
 
 function whiteListIframes(html: string): string {
-  const trustedSources = ['player.bilibili.com'];
+  const trustedHosts = new Set(['player.bilibili.com']);
   const div = document.createElement('div');
   div.innerHTML = html;
   div.querySelectorAll('iframe').forEach(iframe => {
     const src = iframe.getAttribute('src') || '';
-    const isTrusted = trustedSources.some(source => src.includes(source));
+    let isTrusted = false;
+
+    try {
+      const normalizedSrc = src.startsWith('//') ? `https:${src}` : src;
+      const url = new URL(normalizedSrc, window.location.origin);
+      isTrusted = url.protocol === 'https:' && trustedHosts.has(url.hostname);
+    } catch {
+      isTrusted = false;
+    }
+
     if (!isTrusted) iframe.remove();
     else {
       iframe.setAttribute('allowfullscreen', 'true');
@@ -71,6 +80,8 @@ function addLazyLoadToImages(html: string): string {
 </script>
 
 <template>
+  <!-- DOMPurify sanitizes the HTML before rendering. -->
+  <!-- eslint-disable-next-line vue/no-v-html -->
   <div class="safe-content" v-html="purifiedHTML"></div>
 </template>
 

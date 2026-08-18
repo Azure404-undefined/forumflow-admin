@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { watchDebounced } from '@vueuse/core';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance } from 'element-plus';
+import { APP_ROLES, PERMISSION_CODES } from '@/constants/auth';
 import {
   addPost,
   auditPosts,
@@ -13,17 +14,26 @@ import {
   setPostEssence,
   setPostTop
 } from '@/service/api/post';
+import { useAuthStore } from '@/store/modules/auth';
+import { useAuth } from '@/hooks/business/auth';
 import CustomPagination from '@/components/custom/pagination.vue';
 import DetailDialog from '../components/detailDialog.vue';
+
+const authStore = useAuthStore();
+const { hasAuth } = useAuth();
+const postPermission = PERMISSION_CODES.post;
+const isCommonUser = computed(() => authStore.userInfo.roles.includes(APP_ROLES.common));
+const hasBatchPermission = computed(() => hasAuth([postPermission.audit, postPermission.delete]));
+const hasPostWritePermission = computed(() => hasAuth(Object.values(postPermission)));
 
 // 搜索与分页
 const searchForm = reactive({
   title: '',
   authorName: '',
   forumId: '',
-  status: '' as Api.Post.PostStatus,
-  top: 0 as Api.Post.TopStatus,
-  essence: 0 as Api.Post.EssenceStatus,
+  status: '' as '' | Api.Post.PostStatus,
+  top: '' as '' | Api.Post.TopStatus,
+  essence: '' as '' | Api.Post.EssenceStatus,
   dateRange: []
 });
 const current = ref(1);
@@ -75,9 +85,9 @@ async function getPostList() {
       title: searchForm.title,
       authorName: searchForm.authorName,
       forumId: searchForm.forumId,
-      status: searchForm.status,
-      top: searchForm.top,
-      essence: searchForm.essence,
+      status: isCommonUser.value ? 'published' : searchForm.status || undefined,
+      top: searchForm.top === '' ? undefined : searchForm.top,
+      essence: searchForm.essence === '' ? undefined : searchForm.essence,
       ...dataParams
     });
     posts.value = res.data?.list || [];
@@ -107,9 +117,9 @@ function resetSearch() {
   searchForm.title = '';
   searchForm.authorName = '';
   searchForm.forumId = '';
-  searchForm.status = '' as Api.Post.PostStatus;
-  searchForm.top = 0;
-  searchForm.essence = 0;
+  searchForm.status = '';
+  searchForm.top = '';
+  searchForm.essence = '';
   searchForm.dateRange = [];
   current.value = 1;
 }
@@ -287,7 +297,7 @@ onMounted(() => {
             <ElSelect v-model="searchForm.forumId" placeholder="版块" class="status-select">
               <ElOption v-for="f in forums" :key="f.id" :label="f.name" :value="f.id" />
             </ElSelect>
-            <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select">
+            <ElSelect v-if="!isCommonUser" v-model="searchForm.status" placeholder="状态" class="status-select">
               <ElOption label="全部" value="" />
               <ElOption label="草稿" value="draft" />
               <ElOption label="已发布" value="published" />
@@ -296,12 +306,12 @@ onMounted(() => {
               <ElOption label="已删除" value="deleted" />
             </ElSelect>
             <ElSelect v-model="searchForm.top" placeholder="置顶" class="status-select">
-              <!-- <ElOption label="全部" value="" /> -->
+              <ElOption label="全部" value="" />
               <ElOption label="置顶" :value="1" />
               <ElOption label="未置顶" :value="0" />
             </ElSelect>
             <ElSelect v-model="searchForm.essence" placeholder="加精" class="status-select">
-              <!-- <ElOption label="全部" value="" /> -->
+              <ElOption label="全部" value="" />
               <ElOption label="加精" :value="1" />
               <ElOption label="未加精" :value="0" />
             </ElSelect>
@@ -323,9 +333,9 @@ onMounted(() => {
         <ElText class="mx-1" size="large">帖子列表</ElText>
         <div class="actions-space">
           <ElButton type="primary" :loading="loading" @click="getPostList">刷新</ElButton>
-          <ElButton type="primary" @click="handleCreate">新增帖子</ElButton>
-          <ElButton type="primary" @click="batchAudit">批量审核</ElButton>
-          <ElButton type="danger" @click="batchDelete">批量删除</ElButton>
+          <ElButton v-if="hasAuth(postPermission.create)" type="primary" @click="handleCreate">新增帖子</ElButton>
+          <ElButton v-if="hasAuth(postPermission.audit)" type="primary" @click="batchAudit">批量审核</ElButton>
+          <ElButton v-if="hasAuth(postPermission.delete)" type="danger" @click="batchDelete">批量删除</ElButton>
         </div>
       </div>
       <ElTable
@@ -338,7 +348,13 @@ onMounted(() => {
         class="post-table"
         @selection-change="handleSelectionChange"
       >
-        <ElTableColumn type="selection" fixed :reserve-selection="true" width="50"></ElTableColumn>
+        <ElTableColumn
+          v-if="hasBatchPermission"
+          type="selection"
+          fixed
+          :reserve-selection="true"
+          width="50"
+        ></ElTableColumn>
         <ElTableColumn label="标题" min-width="280" show-overflow-tooltip>
           <template #default="{ row }">
             <a class="post-title-link" @click="() => detailOpen(row)">{{ row.title }}</a>
@@ -397,17 +413,37 @@ onMounted(() => {
           </template>
         </ElTableColumn>
         <ElTableColumn prop="createTime" label="创建时间" width="160" />
-        <ElTableColumn label="操作" width="240" align="center">
+        <ElTableColumn v-if="hasPostWritePermission" label="操作" width="240" align="center">
           <template #default="{ row }">
-            <ElButton type="primary" plain size="small" @click="() => handleEdit(row)">编辑</ElButton>
-            <ElButton type="info" plain size="small" @click="() => handleToggleTop(row)">
+            <ElButton
+              v-if="hasAuth(postPermission.update)"
+              type="primary"
+              plain
+              size="small"
+              @click="() => handleEdit(row)"
+            >
+              编辑
+            </ElButton>
+            <ElButton
+              v-if="hasAuth(postPermission.top)"
+              type="info"
+              plain
+              size="small"
+              @click="() => handleToggleTop(row)"
+            >
               {{ row.top === 1 ? '取消置顶' : '置顶' }}
             </ElButton>
-            <ElButton type="info" plain size="small" @click="() => handleToggleEssence(row)">
+            <ElButton
+              v-if="hasAuth(postPermission.essence)"
+              type="info"
+              plain
+              size="small"
+              @click="() => handleToggleEssence(row)"
+            >
               {{ row.essence === 1 ? '取消加精' : '加精' }}
             </ElButton>
             <ElButton
-              v-if="row.status === 'pending'"
+              v-if="row.status === 'pending' && hasAuth(postPermission.audit)"
               type="success"
               plain
               size="small"
@@ -416,7 +452,7 @@ onMounted(() => {
               通过
             </ElButton>
             <ElButton
-              v-if="row.status === 'pending'"
+              v-if="row.status === 'pending' && hasAuth(postPermission.audit)"
               type="warning"
               plain
               size="small"
@@ -424,7 +460,7 @@ onMounted(() => {
             >
               驳回
             </ElButton>
-            <ElPopconfirm title="确认删除？" @confirm="() => handleDelete(row)">
+            <ElPopconfirm v-if="hasAuth(postPermission.delete)" title="确认删除？" @confirm="() => handleDelete(row)">
               <template #reference>
                 <ElButton type="danger" plain size="small">删除</ElButton>
               </template>
@@ -472,7 +508,7 @@ onMounted(() => {
           <ElCheckbox v-model="form.essence">加精</ElCheckbox>
         </ElFormItem>
         <ElFormItem class="drawerFooter">
-          <ElButton type="primary" @click="onSubmit">保存</ElButton>
+          <ElButton v-if="hasAuth(postPermission.create)" type="primary" @click="onSubmit">保存</ElButton>
           <ElButton
             @click="
               () => {

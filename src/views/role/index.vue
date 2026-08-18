@@ -2,6 +2,7 @@
 import { nextTick, onMounted, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { TreeInstance } from 'element-plus';
+import { PERMISSION_CODES } from '@/constants/auth';
 import {
   addRole,
   assignRolePermissions,
@@ -11,9 +12,13 @@ import {
   fetchRoleList,
   fetchRolePermissions
 } from '@/service/api/role';
+import { useAuth } from '@/hooks/business/auth';
 // import CustomPagination from '@/components/custom/pagination.vue';
 
 type Role = Api.Role.RoleInfo;
+
+const { hasAuth } = useAuth();
+const rolePermission = PERMISSION_CODES.role;
 
 const searchForm = ref({ id: '', name: '', status: '' as '' | 0 | 1 });
 const loading = ref(false);
@@ -154,7 +159,7 @@ async function handleAssign(row: Role) {
 }
 
 async function handlePermissionSubmit() {
-  const checkedKeys = treeRef.value?.getCheckedKeys();
+  const checkedKeys = treeRef.value?.getCheckedKeys(true);
   if (!checkedKeys) {
     ElMessage.warning('请选择一项权限');
     return;
@@ -311,8 +316,14 @@ onMounted(() => {
       <div class="actions-space">
         <div>角色列表</div>
         <div class="actions-button">
-          <ElButton type="primary" @click="handleCreate">新增角色</ElButton>
-          <ElButton type="primary" @click="handleSelectionEdit">批量操作</ElButton>
+          <ElButton v-if="hasAuth(rolePermission.create)" type="primary" @click="handleCreate">新增角色</ElButton>
+          <ElButton
+            v-if="hasAuth([rolePermission.delete, rolePermission.updateStatus])"
+            type="primary"
+            @click="handleSelectionEdit"
+          >
+            批量操作
+          </ElButton>
         </div>
       </div>
       <ElTable
@@ -323,7 +334,10 @@ onMounted(() => {
         class="role-table"
         @selection-change="handleSelectionChange"
       >
-        <ElTableColumn type="selection"></ElTableColumn>
+        <ElTableColumn
+          v-if="hasAuth([rolePermission.delete, rolePermission.updateStatus])"
+          type="selection"
+        ></ElTableColumn>
         <ElTableColumn prop="id" label="角色ID" width="120" />
         <ElTableColumn prop="name" label="名称" width="160" />
         <ElTableColumn prop="description" label="描述" />
@@ -335,11 +349,28 @@ onMounted(() => {
           </template>
         </ElTableColumn>
         <ElTableColumn prop="createTime" label="创建时间" width="180" />
-        <ElTableColumn label="操作" width="260" align="center">
+        <ElTableColumn
+          v-if="hasAuth([rolePermission.update, rolePermission.delete, rolePermission.assignPermission])"
+          label="操作"
+          width="260"
+          align="center"
+        >
           <template #default="{ row }">
-            <ElButton type="primary" plain size="small" @click="handleEdit(row)">编辑</ElButton>
-            <ElButton type="danger" plain size="small" @click="handleDelete(row)">删除</ElButton>
-            <ElButton type="success" plain size="small" @click="handleAssign(row)">分配权限</ElButton>
+            <ElButton v-if="hasAuth(rolePermission.update)" type="primary" plain size="small" @click="handleEdit(row)">
+              编辑
+            </ElButton>
+            <ElButton v-if="hasAuth(rolePermission.delete)" type="danger" plain size="small" @click="handleDelete(row)">
+              删除
+            </ElButton>
+            <ElButton
+              v-if="hasAuth(rolePermission.assignPermission)"
+              type="success"
+              plain
+              size="small"
+              @click="handleAssign(row)"
+            >
+              分配权限
+            </ElButton>
           </template>
         </ElTableColumn>
       </ElTable>
@@ -382,7 +413,14 @@ onMounted(() => {
       <template #footer>
         <div class="dialog-footer">
           <ElButton @click="dialogFormVisible = false">取消</ElButton>
-          <ElButton type="primary" :loading="submitting" @click="saveRole">保存</ElButton>
+          <ElButton
+            v-if="hasAuth(isEdit ? rolePermission.update : rolePermission.create)"
+            type="primary"
+            :loading="submitting"
+            @click="saveRole"
+          >
+            保存
+          </ElButton>
         </div>
       </template>
     </ElDialog>
@@ -400,8 +438,10 @@ onMounted(() => {
       <template #footer>
         <div class="dialog-footer">
           <ElButton @click="batchDialogVisible = false">取消</ElButton>
-          <ElButton type="danger" @click="batchDeleteRoles">删除选中</ElButton>
-          <ElButton type="primary" @click="batchUpdateStatus">应用修改</ElButton>
+          <ElButton v-if="hasAuth(rolePermission.delete)" type="danger" @click="batchDeleteRoles">删除选中</ElButton>
+          <ElButton v-if="hasAuth(rolePermission.updateStatus)" type="primary" @click="batchUpdateStatus">
+            应用修改
+          </ElButton>
         </div>
       </template>
     </ElDialog>
@@ -420,7 +460,14 @@ onMounted(() => {
       />
       <template #footer>
         <ElButton @click="permissionDialogVisible = false">取消</ElButton>
-        <ElButton type="primary" :loading="submitting" @click="handlePermissionSubmit">确认</ElButton>
+        <ElButton
+          v-if="hasAuth(rolePermission.assignPermission)"
+          type="primary"
+          :loading="submitting"
+          @click="handlePermissionSubmit"
+        >
+          确认
+        </ElButton>
       </template>
     </ElDialog>
   </div>

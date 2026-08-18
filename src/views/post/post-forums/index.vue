@@ -3,7 +3,10 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'v
 import { watchDebounced } from '@vueuse/core';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules, TreeInstance, UploadFile } from 'element-plus';
+import { APP_ROLES, PERMISSION_CODES } from '@/constants/auth';
 import { addForum, deleteForum, editForum, fetchForumTree, moveForum } from '@/service/api/forums';
+import { useAuthStore } from '@/store/modules/auth';
+import { useAuth } from '@/hooks/business/auth';
 
 defineOptions({ name: 'PostForums' });
 
@@ -11,6 +14,13 @@ defineOptions({ name: 'PostForums' });
  * 类型定义（项目中全局 API 类型在 `Api.Forum` 命名空间）
  */
 type ForumInfo = Api.Forum.ForumInfo;
+
+const authStore = useAuthStore();
+const { hasAuth } = useAuth();
+const forumPermission = PERMISSION_CODES.forum;
+const isCommonUser = computed(() => authStore.userInfo.roles.includes(APP_ROLES.common));
+const hasForumWritePermission = computed(() => hasAuth(Object.values(forumPermission)));
+const isForumReadonly = computed(() => !hasAuth([forumPermission.create, forumPermission.update]));
 /**
  * 表单模型：去掉后端原始 `svgIcon` 与 `parentId` 的某些字段，
  * 并在本地维护 `iconFile`（用于上传）和 string 类型的 `parentId`
@@ -183,6 +193,16 @@ function normalizeForumTree(list: unknown, parentId: string | null = null): Foru
   });
 }
 
+function filterEnabledForumTree(list: ForumInfo[]): ForumInfo[] {
+  return list.flatMap(item => {
+    if (item.status !== 1) return [];
+
+    const children = filterEnabledForumTree(item.children || []);
+
+    return [{ ...item, children: children.length ? children : undefined }];
+  });
+}
+
 /**
  * 将树形结构扁平化，附带层级信息（用于父级选择与统计）
  */
@@ -310,7 +330,8 @@ async function getForumTree(targetId = currentForum.value?.id) {
 
   try {
     const res = await fetchForumTree();
-    forumTree.value = normalizeForumTree(res.data);
+    const normalizedTree = normalizeForumTree(res.data);
+    forumTree.value = isCommonUser.value ? filterEnabledForumTree(normalizedTree) : normalizedTree;
     selectForum(targetId);
   } catch {
     ElMessage.error('获取板块树失败');
@@ -553,9 +574,9 @@ onBeforeUnmount(() => {
       <ElCard class="tree-panel">
         <template #header>
           <div class="panel-header">
-            <ElText class="panel-title">板块管理</ElText>
+            <ElText class="panel-title">板块列表</ElText>
             <ElText class="page-summary">共 {{ flatForums.length }} 个板块，{{ activeCount }} 个启用</ElText>
-            <ElButton type="primary" @click="handleCreateRoot">
+            <ElButton v-if="hasAuth(forumPermission.create)" type="primary" @click="handleCreateRoot">
               <SvgIcon icon="ic:round-plus" class="mr-4px text-16px" />
               新增根版块
             </ElButton>
@@ -574,7 +595,7 @@ onBeforeUnmount(() => {
             v-loading="loading"
             :data="forumTree"
             node-key="id"
-            draggable
+            :draggable="hasAuth(forumPermission.move)"
             default-expand-all
             highlight-current
             empty-text="暂无板块"
@@ -609,7 +630,7 @@ onBeforeUnmount(() => {
 
         <div class="tree-tip">
           <SvgIcon icon="mdi:drag" class="text-16px" />
-          <span>拖拽节点可调整排序或移动位置</span>
+          <span>{{ hasAuth(forumPermission.move) ? '拖拽节点可调整排序或移动位置' : '选择节点查看板块详情' }}</span>
         </div>
       </ElCard>
 
@@ -619,7 +640,7 @@ onBeforeUnmount(() => {
             <div class="page-heading">
               <ElText class="panel-title">板块详情</ElText>
               <ElText class="detail-subtitle">
-                {{ isEditing ? currentForum?.name : '新增板块' }}
+                {{ isEditing ? currentForum?.name : hasAuth(forumPermission.create) ? '新增板块' : '请选择板块' }}
               </ElText>
             </div>
             <ElTag :type="form.status === 1 ? 'success' : 'warning'" effect="light">
@@ -640,11 +661,16 @@ onBeforeUnmount(() => {
             >
               <div class="form-grid">
                 <ElFormItem label="板块名称" prop="name">
-                  <ElInput v-model="form.name" maxlength="30" placeholder="请输入板块名称" />
+                  <ElInput
+                    v-model="form.name"
+                    :disabled="isForumReadonly"
+                    maxlength="30"
+                    placeholder="请输入板块名称"
+                  />
                 </ElFormItem>
 
                 <ElFormItem label="父级板块" prop="parentId">
-                  <ElSelect v-model="form.parentId" placeholder="请选择父级板块" clearable>
+                  <ElSelect v-model="form.parentId" :disabled="isForumReadonly" placeholder="请选择父级板块" clearable>
                     <ElOption label="顶级板块" value="" />
                     <ElOption
                       v-for="item in parentOptions"
@@ -663,6 +689,7 @@ onBeforeUnmount(() => {
                 <ElFormItem label="排序" prop="sort">
                   <ElInputNumber
                     v-model="form.sort"
+                    :disabled="isForumReadonly"
                     :min="1"
                     :max="9999"
                     controls-position="right"
@@ -671,7 +698,7 @@ onBeforeUnmount(() => {
                 </ElFormItem>
 
                 <ElFormItem label="状态" prop="status">
-                  <ElRadioGroup v-model="form.status">
+                  <ElRadioGroup v-model="form.status" :disabled="isForumReadonly">
                     <ElRadio :value="1">启用</ElRadio>
                     <ElRadio :value="0">禁用</ElRadio>
                   </ElRadioGroup>
@@ -685,6 +712,7 @@ onBeforeUnmount(() => {
                     <SvgIcon v-else icon="material-symbols:folder-outline" class="text-24px" />
                   </div>
                   <ElUpload
+                    v-if="hasAuth([forumPermission.create, forumPermission.update])"
                     accept=".svg,image/svg+xml"
                     :auto-upload="false"
                     :show-file-list="false"
@@ -698,6 +726,7 @@ onBeforeUnmount(() => {
               <ElFormItem label="板块描述" prop="description">
                 <ElInput
                   v-model="form.description"
+                  :disabled="isForumReadonly"
                   type="textarea"
                   :rows="5"
                   maxlength="500"
@@ -728,19 +757,39 @@ onBeforeUnmount(() => {
           </ElTabPane>
         </ElTabs>
 
-        <div class="detail-footer">
-          <ElButton type="primary" :loading="submitting" @click="submitForum">
+        <div v-if="hasForumWritePermission" class="detail-footer">
+          <ElButton
+            v-if="hasAuth(isEditing ? forumPermission.update : forumPermission.create)"
+            type="primary"
+            :loading="submitting"
+            @click="submitForum"
+          >
             {{ isEditing ? '保存修改' : '新增板块' }}
           </ElButton>
-          <ElButton :disabled="!currentForum && !form.id" @click="handleCreateChild">
+          <ElButton
+            v-if="hasAuth(forumPermission.create)"
+            :disabled="!currentForum && !form.id"
+            @click="handleCreateChild"
+          >
             <SvgIcon icon="ic:round-plus" class="mr-4px text-16px" />
             新增子版块
           </ElButton>
-          <ElButton :disabled="!currentForum && !form.id" @click="handleCreateSibling">
+          <ElButton
+            v-if="hasAuth(forumPermission.create)"
+            :disabled="!currentForum && !form.id"
+            @click="handleCreateSibling"
+          >
             <SvgIcon icon="ic:round-plus" class="mr-4px text-16px" />
             新增同级版块
           </ElButton>
-          <ElButton type="danger" plain :disabled="!isEditing" :loading="deleting" @click="handleDeleteForum">
+          <ElButton
+            v-if="hasAuth(forumPermission.delete)"
+            type="danger"
+            plain
+            :disabled="!isEditing"
+            :loading="deleting"
+            @click="handleDeleteForum"
+          >
             <SvgIcon icon="ic:round-delete" class="mr-4px text-16px" />
             删除板块
           </ElButton>

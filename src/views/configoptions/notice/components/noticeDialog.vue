@@ -3,11 +3,12 @@ import { computed, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { addNotice, editNotice, fetchNoticeDetail } from '@/service/api/notice';
 import RichTextEditor from '@/components/common/richTextEditor.vue';
+import SafeContent from '@/components/common/safeContend.vue';
 
 const props = defineProps<{
   modelValue: boolean;
   noticeId?: string;
-  mode?: 'create' | 'edit';
+  mode?: 'create' | 'edit' | 'view';
 }>();
 
 const emit = defineEmits<{
@@ -21,6 +22,11 @@ const visible = computed({
 });
 
 const isCreateMode = computed(() => props.mode === 'create');
+const isViewMode = computed(() => props.mode === 'view');
+const dialogTitle = computed(() => {
+  if (isCreateMode.value) return '新增公告';
+  return isViewMode.value ? '公告详情' : '编辑公告';
+});
 const loading = ref(false);
 const submitting = ref(false);
 
@@ -104,15 +110,21 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <ElDialog
-    v-model="visible"
-    :title="isCreateMode ? '新增公告' : '编辑公告'"
-    width="min(700px, 94vw)"
-    top="6vh"
-    :destroy-on-close="true"
-  >
+  <ElDialog v-model="visible" :title="dialogTitle" width="min(700px, 94vw)" top="6vh" :destroy-on-close="true">
     <div v-loading="loading">
-      <ElForm label-position="top" class="dialog-form">
+      <ElDescriptions v-if="isViewMode" :column="1" border class="notice-detail">
+        <ElDescriptionsItem label="公告标题">{{ form.title }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="公告状态">
+          <ElTag :type="form.status === 'published' ? 'success' : form.status === 'archived' ? 'info' : 'warning'">
+            {{ form.status === 'published' ? '已发布' : form.status === 'archived' ? '已下架' : '草稿' }}
+          </ElTag>
+        </ElDescriptionsItem>
+        <ElDescriptionsItem v-if="form.publishTime" label="发布时间">{{ form.publishTime }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="公告内容">
+          <SafeContent :html="form.content || ''" :allow-iframe="true" />
+        </ElDescriptionsItem>
+      </ElDescriptions>
+      <ElForm v-else label-position="top" class="dialog-form">
         <ElFormItem label="公告标题" required>
           <ElInput v-model="form.title" placeholder="请输入公告标题" maxlength="100" show-word-limit />
         </ElFormItem>
@@ -145,8 +157,8 @@ async function handleSubmit() {
 
     <template #footer>
       <div class="dialog-footer">
-        <ElButton type="primary" :loading="submitting" @click="handleSubmit">保存</ElButton>
-        <ElButton @click="close">取消</ElButton>
+        <ElButton v-if="!isViewMode" type="primary" :loading="submitting" @click="handleSubmit">保存</ElButton>
+        <ElButton @click="close">{{ isViewMode ? '关闭' : '取消' }}</ElButton>
       </div>
     </template>
   </ElDialog>
@@ -164,5 +176,9 @@ async function handleSubmit() {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.notice-detail {
+  margin: 12px 0;
 }
 </style>

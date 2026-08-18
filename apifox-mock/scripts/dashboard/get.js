@@ -1,0 +1,32 @@
+// 由 tools/generate.mjs 生成；数据来源为 apifox-mock/data。
+
+function respond(data, code, msg) {
+  fox.mockResponse.setBody({ data: data === undefined ? null : data, code: code || '0000', msg: msg || '请求成功' });
+}
+function param(name) {
+  return fox.mockRequest.getParam(name);
+}
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== '';
+}
+function text(value) {
+  return String(value === undefined || value === null ? '' : value).toLowerCase();
+}
+function page(items) {
+  var pageNum = Math.max(1, Number(param('pageNum')) || 1);
+  var pageSize = Math.max(1, Number(param('pageSize')) || 10);
+  var start = (pageNum - 1) * pageSize;
+  return { list: items.slice(start, start + pageSize), total: items.length, pageNum: pageNum, pageSize: pageSize };
+}
+function authorization() {
+  var headers = fox.mockRequest.headers;
+  if (!headers) return '';
+  if (typeof headers.get === 'function') return headers.get('Authorization') || headers.get('authorization') || '';
+  return headers.Authorization || headers.authorization || '';
+}
+
+function main() {
+  respond({"core":{"totalUsers":12,"dau":8,"mau":12,"totalPosts":12,"totalComments":18,"newPostsToday":1,"newCommentsToday":2,"pendingReports":2},"gender":{"male":5,"female":5,"unknown":2},"age":{"under18":0,"age18_24":4,"age25_30":5,"age31_40":2,"above40":1},"device":{"pc":7,"mobile":4,"tablet":1},"activeTrend":{"dates":["08-12","08-13","08-14","08-15","08-16","08-17","08-18"],"dau":[5,6,7,6,8,7,8],"mau":[10,10,11,11,12,12,12],"newUsers":[0,0,0,0,0,0,0]},"hotForums":[{"forumId":"f2","forumName":"前端开发","postCount":2,"growthRate":16.7},{"forumId":"f5","forumName":"作品展示","postCount":2,"growthRate":12.5},{"forumId":"f4","forumName":"社区生活","postCount":2,"growthRate":8.3}],"hotPosts":[{"id":"p005","title":"如何组织一个可演示的后台项目","authorName":"苏念","viewCount":1450,"likeCount":205,"commentCount":2,"hotScore":96,"createTime":"2026-08-12 18:30:00"},{"id":"p001","title":"Vue 3 组合式 API 的工程化实践","authorName":"林知夏","viewCount":1260,"likeCount":186,"commentCount":2,"hotScore":92,"createTime":"2026-08-18 08:30:00"},{"id":"p002","title":"TypeScript 类型契约如何减少联调成本","authorName":"陈知行","viewCount":980,"likeCount":132,"commentCount":2,"hotScore":84,"createTime":"2026-08-16 14:20:00"}],"hourlyPosts":{"hour":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"count":[0,0,0,0,0,0,0,0,2,1,1,1,0,1,1,1,1,0,1,1,1,0,0,0]}});
+}
+
+main();

@@ -2,9 +2,14 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
+import { PERMISSION_CODES } from '@/constants/auth';
 import { fetchConfigs, saveConfigs } from '@/service/api/config';
 import { uploadImage } from '@/service/api/post';
+import { useAuth } from '@/hooks/business/auth';
 import SvgIcon from '@/components/custom/svg-icon.vue';
+
+const { hasAuth } = useAuth();
+const configPermission = PERMISSION_CODES.config;
 
 type ConfigGroup = Api.Config.ConfigGroup;
 
@@ -123,7 +128,14 @@ onMounted(() => {
         </ElTabs>
 
         <!-- 配置表单 -->
-        <ElForm ref="formRef" :model="formData" :rules="formRules" class="config-form" label-position="top">
+        <ElForm
+          ref="formRef"
+          :model="formData"
+          :rules="formRules"
+          class="config-form"
+          label-position="top"
+          :disabled="!hasAuth(configPermission.update)"
+        >
           <!-- 两列网格 -->
           <div class="config-flex">
             <template v-for="item in currentItems" :key="item.key">
@@ -150,6 +162,7 @@ onMounted(() => {
                       <img :src="formData[item.key]" alt="preview" class="config-image-preview__img" />
                     </div>
                     <ElUpload
+                      v-if="hasAuth(configPermission.update)"
                       :http-request="options => handleCustomUpload(item.key, options)"
                       class="config-upload-button"
                       :auto-upload="true"
@@ -181,7 +194,7 @@ onMounted(() => {
           <div v-if="currentItems.length === 0" class="config-empty-state">当前选项卡无配置项</div>
 
           <!-- 底部按钮 -->
-          <div class="config-actions">
+          <div v-if="hasAuth(configPermission.update)" class="config-actions">
             <ElButton :loading="loading" @click="handleReset">重置</ElButton>
             <ElButton type="primary" :loading="saving" @click="handleSave">保存配置</ElButton>
           </div>

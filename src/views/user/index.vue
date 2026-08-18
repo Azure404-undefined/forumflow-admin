@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { ElForm, ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { formStatusOPtions } from '@/constants/business';
+import { APP_ROLES, APP_ROLE_LABELS, PERMISSION_CODES } from '@/constants/auth';
 import {
   addUser,
   assignUserRoles,
@@ -12,10 +13,16 @@ import {
   resetUserPwd,
   updateUserStatus
 } from '@/service/api/user';
+import { useAuthStore } from '@/store/modules/auth';
+import { useAuth } from '@/hooks/business/auth';
 import CustomPagination from '@/components/custom/pagination.vue';
 
 type UserInfo = Api.User.UserInfo;
 type UserForm = Api.User.UserForm;
+
+const authStore = useAuthStore();
+const { hasAuth, hasAllAuth } = useAuth();
+const userPermission = PERMISSION_CODES.user;
 
 const searchForm = reactive({ username: '', nickname: '', phone: '', status: '' as '' | 0 | 1 });
 const current = ref(1);
@@ -31,7 +38,15 @@ const tableRef = ref();
 const formRef = ref<FormInstance | null>(null);
 const isBatchOpen = ref(false);
 const batchFormRef = ref<FormInstance | null>(null);
-const userRoles = ['super', 'admin', 'moderator', 'user'];
+const isSuper = computed(() => authStore.userInfo.roles.includes(APP_ROLES.super));
+const userRoles = computed(() => {
+  const roles = isSuper.value ? Object.values(APP_ROLES) : [APP_ROLES.common];
+
+  return roles.map(value => ({ value, label: APP_ROLE_LABELS[value] }));
+});
+const hasBatchPermission = computed(() =>
+  hasAuth([userPermission.assignRole, userPermission.updateStatus, userPermission.resetPassword, userPermission.delete])
+);
 const form = ref<UserForm & { id: string }>({
   id: '',
   username: '',
@@ -86,6 +101,26 @@ const formRules = ref<FormRules<UserForm>>({
 
 const users = ref<UserInfo[]>([]);
 const selectedRows = ref<UserInfo[]>([]);
+
+function isCurrentUser(row: UserInfo) {
+  return row.id === authStore.userInfo.userId;
+}
+
+function isCommonUser(row: UserInfo) {
+  return row.roles.length > 0 && row.roles.every(role => role === APP_ROLES.common);
+}
+
+function canManageUser(row: UserInfo) {
+  return isSuper.value || isCommonUser(row);
+}
+
+function canSelectUser(row: UserInfo) {
+  return hasBatchPermission.value && !isCurrentUser(row) && canManageUser(row);
+}
+
+function canDeleteUser(row: UserInfo) {
+  return hasAuth(userPermission.delete) && !isCurrentUser(row) && canManageUser(row);
+}
 
 const batchForm = ref({
   password: '',
@@ -197,6 +232,11 @@ function handleCreate() {
 }
 
 function handleEdit(row: UserForm & { id: string }) {
+  if (!canManageUser(row as UserInfo)) {
+    ElMessage.warning('当前账号无权编辑该用户');
+    return;
+  }
+
   isEdit.value = true;
   form.value = { ...row };
   if (typeof form.value.status === 'string') {
@@ -209,6 +249,11 @@ function handleEdit(row: UserForm & { id: string }) {
 }
 
 async function handleDelete(row: UserInfo) {
+  if (!canDeleteUser(row)) {
+    ElMessage.warning('当前账号无权删除该用户');
+    return;
+  }
+
   const res = await deleteUser(row.id);
   // console.log(res.response.data.msg)
   ElMessage.success(res.response.data.msg);
@@ -334,8 +379,8 @@ onMounted(() => {
       <div class="card-header">
         <ElText class="mx-1" size="large">用户列表</ElText>
         <div class="actions-space">
-          <ElButton type="primary" @click="handleCreate()">新增用户</ElButton>
-          <ElButton type="primary" @click="handleSelectedRowsEdit">批量操作</ElButton>
+          <ElButton v-if="hasAuth(userPermission.create)" type="primary" @click="handleCreate()">新增用户</ElButton>
+          <ElButton v-if="hasBatchPermission" type="primary" @click="handleSelectedRowsEdit">批量操作</ElButton>
         </div>
       </div>
 
@@ -349,7 +394,14 @@ onMounted(() => {
         class="user-table"
         @selection-change="handleSelectionChange"
       >
-        <ElTableColumn type="selection" fixed :reserve-selection="true" width="50"></ElTableColumn>
+        <ElTableColumn
+          v-if="hasBatchPermission"
+          type="selection"
+          fixed
+          :reserve-selection="true"
+          :selectable="canSelectUser"
+          width="50"
+        ></ElTableColumn>
         <ElTableColumn prop="id" label="ID" fixed width="80" />
         <ElTableColumn prop="username" label="用户名" width="100" />
         <ElTableColumn prop="nickname" label="昵称" width="100" />
@@ -364,10 +416,23 @@ onMounted(() => {
             </ElTag>
           </template>
         </ElTableColumn>
-        <ElTableColumn label="操作" width="160" align="center">
+        <ElTableColumn
+          v-if="hasAuth([userPermission.update, userPermission.delete])"
+          label="操作"
+          width="160"
+          align="center"
+        >
           <template #default="scoped">
-            <ElButton type="primary" plain size="small" @click="handleEdit(scoped.row)">编辑</ElButton>
-            <ElPopconfirm title="确认删除？" @confirm="() => handleDelete(scoped.row)">
+            <ElButton
+              v-if="hasAuth(userPermission.update) && canManageUser(scoped.row)"
+              type="primary"
+              plain
+              size="small"
+              @click="handleEdit(scoped.row)"
+            >
+              编辑
+            </ElButton>
+            <ElPopconfirm v-if="canDeleteUser(scoped.row)" title="确认删除？" @confirm="() => handleDelete(scoped.row)">
               <template #reference>
                 <ElButton type="danger" plain size="small">删除</ElButton>
               </template>
@@ -417,8 +482,8 @@ onMounted(() => {
         <ElInput v-model="form.phone" />
       </ElFormItem>
       <ElFormItem label="用户角色" prop="roles">
-        <ElSelect v-model="form.roles" placeholder="please select" multiple>
-          <ElOption v-for="item in userRoles" :key="item" :label="item" :value="item" />
+        <ElSelect v-model="form.roles" placeholder="请选择角色" multiple>
+          <ElOption v-for="item in userRoles" :key="item.value" :label="item.label" :value="item.value" />
         </ElSelect>
       </ElFormItem>
       <ElFormItem label="状态" prop="status">
@@ -433,7 +498,13 @@ onMounted(() => {
         </ElRadioGroup>
       </ElFormItem>
       <ElFormItem class="drawerFooter">
-        <ElButton type="primary" @click="onSubmit()">保存</ElButton>
+        <ElButton
+          v-if="hasAuth(isEdit ? userPermission.update : userPermission.create)"
+          type="primary"
+          @click="onSubmit()"
+        >
+          保存
+        </ElButton>
         <ElButton
           @click="
             () => {
@@ -467,15 +538,15 @@ onMounted(() => {
         <div>批量操作</div>
         <div>已选中 {{ selectedRows.length }} 项</div>
       </div>
-      <ElFormItem label="重置密码">
+      <ElFormItem v-if="hasAuth(userPermission.resetPassword)" label="重置密码">
         <ElInput v-model="batchForm.password" type="password" placeholder="用于重置密码" />
       </ElFormItem>
-      <ElFormItem label="用户角色">
+      <ElFormItem v-if="hasAuth(userPermission.assignRole)" label="用户角色">
         <ElSelect v-model="batchForm.roles" placeholder="请选择角色" multiple>
-          <ElOption v-for="item in userRoles" :key="item" :label="item" :value="item" />
+          <ElOption v-for="item in userRoles" :key="item.value" :label="item.label" :value="item.value" />
         </ElSelect>
       </ElFormItem>
-      <ElFormItem label="状态">
+      <ElFormItem v-if="hasAuth(userPermission.updateStatus)" label="状态">
         <ElRadioGroup v-model="batchForm.status">
           <ElRadio
             v-for="item in formStatusOPtions"
@@ -487,9 +558,17 @@ onMounted(() => {
         </ElRadioGroup>
       </ElFormItem>
       <ElFormItem class="drawerFooter">
-        <ElButton type="primary" @click="batchApply">应用修改</ElButton>
-        <ElButton type="primary" @click="batchResetPassword">重置密码</ElButton>
-        <ElPopconfirm title="确认删除？" @confirm="batchDelete">
+        <ElButton
+          v-if="hasAllAuth([userPermission.assignRole, userPermission.updateStatus])"
+          type="primary"
+          @click="batchApply"
+        >
+          应用修改
+        </ElButton>
+        <ElButton v-if="hasAuth(userPermission.resetPassword)" type="primary" @click="batchResetPassword">
+          重置密码
+        </ElButton>
+        <ElPopconfirm v-if="hasAuth(userPermission.delete)" title="确认删除？" @confirm="batchDelete">
           <template #reference>
             <ElButton type="danger">删除</ElButton>
           </template>

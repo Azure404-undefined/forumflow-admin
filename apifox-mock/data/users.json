@@ -1,0 +1,14 @@
+[
+  { "id": "0", "username": "Soybean", "nickname": "林知夏", "email": "soybean@example.com", "phone": "13800000000", "status": 1, "roles": ["R_SUPER"], "createTime": "2026-05-20 09:00:00" },
+  { "id": "1", "username": "Super", "nickname": "周景行", "email": "super@example.com", "phone": "13800000001", "status": 1, "roles": ["R_SUPER"], "createTime": "2026-05-21 10:00:00" },
+  { "id": "2", "username": "Admin", "nickname": "陈知行", "email": "admin@example.com", "phone": "13800000002", "status": 1, "roles": ["R_ADMIN"], "createTime": "2026-05-22 11:00:00" },
+  { "id": "3", "username": "User", "nickname": "苏念", "email": "user@example.com", "phone": "13800000003", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-05-23 12:00:00" },
+  { "id": "4", "username": "LinXi", "nickname": "林溪", "email": "linxi@example.com", "phone": "13800000004", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-06-02 09:30:00" },
+  { "id": "5", "username": "MuYu", "nickname": "沐雨", "email": "muyu@example.com", "phone": "13800000005", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-06-12 14:20:00" },
+  { "id": "6", "username": "JiangHe", "nickname": "江河", "email": "jianghe@example.com", "phone": "13800000006", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-06-28 16:40:00" },
+  { "id": "7", "username": "XingYe", "nickname": "星野", "email": "xingye@example.com", "phone": "13800000007", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-07-05 08:45:00" },
+  { "id": "8", "username": "QingChuan", "nickname": "晴川", "email": "qingchuan@example.com", "phone": "13800000008", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-07-14 13:10:00" },
+  { "id": "9", "username": "NanZhi", "nickname": "南枝", "email": "nanzhi@example.com", "phone": "13800000009", "status": 0, "roles": ["R_USER_COMMON"], "createTime": "2026-07-25 18:30:00" },
+  { "id": "10", "username": "BaiYu", "nickname": "白榆", "email": "baiyu@example.com", "phone": "13800000010", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-08-03 10:15:00" },
+  { "id": "11", "username": "WanFeng", "nickname": "晚风", "email": "wanfeng@example.com", "phone": "13800000011", "status": 1, "roles": ["R_USER_COMMON"], "createTime": "2026-08-12 20:05:00" }
+]

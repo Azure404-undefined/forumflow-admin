@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { auditPosts, deletePost, editPost, fetchPostDetail, setPostEssence, setPostTop } from '@/service/api/post';
+import { PERMISSION_CODES } from '@/constants/auth';
 import { deleteComment, fetchCommentList } from '@/service/api/comment';
+import { auditPosts, deletePost, editPost, fetchPostDetail, setPostEssence, setPostTop } from '@/service/api/post';
+import { useAuth } from '@/hooks/business/auth';
 import SafeContent from '@/components/common/safeContend.vue';
+
+const { hasAuth } = useAuth();
+const postPermission = PERMISSION_CODES.post;
+const commentPermission = PERMISSION_CODES.comment;
 
 const props = defineProps<{
   modelValue: boolean;
@@ -21,6 +27,12 @@ const visible = computed({
 });
 
 const isEditMode = computed(() => props.mode === 'edit');
+const canEditPost = computed(() => isEditMode.value && hasAuth(postPermission.update));
+const hasPostOperations = computed(
+  () =>
+    isEditMode.value &&
+    hasAuth([postPermission.delete, postPermission.audit, postPermission.top, postPermission.essence])
+);
 
 const loading = ref(false);
 const post = ref<Api.Post.PostInfo | null>(null);
@@ -240,8 +252,8 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
 
         <div class="post-body">
           <!-- 主体内容：查看时使用 SafeContent，编辑时使用富文本 -->
-          <SafeContent v-if="post && !isEditMode" :html="post.content || ''" :allow-iframe="true" />
-          <RichTextEditor v-else-if="post && isEditMode" v-model:model-value="contentEdit" />
+          <SafeContent v-if="post && !canEditPost" :html="post.content || ''" :allow-iframe="true" />
+          <RichTextEditor v-else-if="post && canEditPost" v-model:model-value="contentEdit" />
         </div>
 
         <!-- 评论区 -->
@@ -272,7 +284,14 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
                   <ElButton link size="small" @click="() => toggleCommentCollapse(c)">
                     {{ c.collapsed ? '展开' : '折叠' }}
                   </ElButton>
-                  <ElButton link size="small" @click="() => handleDeleteComment(c)">删除</ElButton>
+                  <ElButton
+                    v-if="isEditMode && hasAuth(commentPermission.delete)"
+                    link
+                    size="small"
+                    @click="() => handleDeleteComment(c)"
+                  >
+                    删除
+                  </ElButton>
                 </div>
               </div>
               <!-- 二级评论列表（默认折叠，仅显示前两条） -->
@@ -297,7 +316,14 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
                   <div class="reply-footer">
                     <div class="reply-meta">{{ r.createTime }} · 点赞 {{ r.likeCount }}</div>
                     <div class="reply-actions" :class="{ display: mode === 'view' ? true : false }">
-                      <ElButton link size="small" @click="() => handleDeleteComment(r)">删除</ElButton>
+                      <ElButton
+                        v-if="isEditMode && hasAuth(commentPermission.delete)"
+                        link
+                        size="small"
+                        @click="() => handleDeleteComment(r)"
+                      >
+                        删除
+                      </ElButton>
                     </div>
                   </div>
                 </div>
@@ -329,24 +355,32 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
           </div>
         </div>
 
-        <div class="ops-box" :class="{ 'box-display': mode === 'view' ? true : false }">
-          <ElButton v-if="post?.status === 'pending'" type="success" @click="() => doAudit(true)">
+        <div v-if="hasPostOperations" class="ops-box">
+          <ElButton
+            v-if="post?.status === 'pending' && hasAuth(postPermission.audit)"
+            type="success"
+            @click="() => doAudit(true)"
+          >
             <SvgIcon icon="ic:round-check" class="mr-4px text-16px" />
             通过
           </ElButton>
-          <ElButton v-if="post?.status === 'pending'" type="warning" @click="() => doAudit(false)">
+          <ElButton
+            v-if="post?.status === 'pending' && hasAuth(postPermission.audit)"
+            type="warning"
+            @click="() => doAudit(false)"
+          >
             <SvgIcon icon="ic:round-close" class="mr-4px text-16px" />
             驳回
           </ElButton>
-          <ElButton type="danger" @click="doDelete">
+          <ElButton v-if="hasAuth(postPermission.delete)" type="danger" @click="doDelete">
             <SvgIcon icon="ic:round-delete" class="mr-4px text-16px" />
             删除
           </ElButton>
-          <ElButton type="info" @click="toggleTop">
+          <ElButton v-if="hasAuth(postPermission.top)" type="info" @click="toggleTop">
             <SvgIcon icon="ic:round-vertical-align-top" class="mr-4px text-16px" />
             {{ post?.top === 1 ? '取消置顶' : '置顶' }}
           </ElButton>
-          <ElButton type="info" @click="toggleEssence">
+          <ElButton v-if="hasAuth(postPermission.essence)" type="info" @click="toggleEssence">
             <SvgIcon icon="ic:round-star" class="mr-4px text-16px" />
             {{ post?.essence === 1 ? '取消加精' : '加精' }}
           </ElButton>
@@ -356,7 +390,7 @@ const statusLabel = (s: Api.Post.PostStatus | undefined) => {
 
     <template #footer>
       <div class="dialog-footer-actions">
-        <ElButton v-if="isEditMode" type="primary" @click="savePost">保存</ElButton>
+        <ElButton v-if="canEditPost" type="primary" @click="savePost">保存</ElButton>
         <ElButton @click="close">关闭</ElButton>
       </div>
     </template>

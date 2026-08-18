@@ -1,0 +1,5 @@
+[
+  { "id": "R_SUPER", "name": "超级管理员", "description": "拥有全部演示权限", "status": 1, "createTime": "2026-05-20 09:00:00" },
+  { "id": "R_ADMIN", "name": "管理员", "description": "负责用户与社区内容管理", "status": 1, "createTime": "2026-05-20 09:10:00" },
+  { "id": "R_USER_COMMON", "name": "普通用户", "description": "只读浏览公开内容", "status": 1, "createTime": "2026-05-20 09:20:00" }
+]

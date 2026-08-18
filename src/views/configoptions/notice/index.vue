@@ -1,16 +1,29 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { watchDebounced } from '@vueuse/core';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { APP_ROLES, PERMISSION_CODES } from '@/constants/auth';
 import { batchDeleteNotice, deleteNotice, editNotice, fetchNoticeList, setNoticeTop } from '@/service/api/notice';
+import { useAuthStore } from '@/store/modules/auth';
+import { useAuth } from '@/hooks/business/auth';
 import CustomPagination from '@/components/custom/pagination.vue';
 import NoticeDialog from './components/noticeDialog.vue';
+
+const { hasAuth } = useAuth();
+const authStore = useAuthStore();
+const noticePermission = PERMISSION_CODES.notice;
+const isCommonUser = computed(() => authStore.userInfo.roles.includes(APP_ROLES.common));
+const hasNoticeOperations = computed(() =>
+  [noticePermission.update, noticePermission.delete, noticePermission.publish, noticePermission.top].some(code =>
+    hasAuth(code)
+  )
+);
 
 // 搜索与分页
 const searchForm = reactive({
   title: '',
-  status: '' as Api.Notice.NoticeStatus,
-  top: 0 as Api.Notice.TopStatus,
+  status: '' as Api.Notice.NoticeStatus | '',
+  top: '' as Api.Notice.TopStatus | '',
   dateRange: []
 });
 const current = ref(1);
@@ -24,7 +37,7 @@ const notices = ref<Api.Notice.NoticeInfo[]>([]);
 const selectedRows = ref<Api.Notice.NoticeInfo[]>([]);
 const tableRef = ref();
 const dialogVisible = ref(false);
-const dialogMode = ref<'create' | 'edit'>('create');
+const dialogMode = ref<'create' | 'edit' | 'view'>('create');
 const dialogNoticeId = ref('');
 
 function handleSelectionChange(selection: Api.Notice.NoticeInfo[]) {
@@ -52,8 +65,8 @@ async function getNoticeList() {
       pageNum: current.value,
       pageSize: pageSize.value,
       title: searchForm.title,
-      status: searchForm.status,
-      top: searchForm.top,
+      status: isCommonUser.value ? 'published' : searchForm.status || undefined,
+      top: searchForm.top === '' ? undefined : searchForm.top,
       ...dataParams
     });
     notices.value = res.data?.list || [];
@@ -81,8 +94,8 @@ watch(pageSize, () => {
 
 function resetSearch() {
   searchForm.title = '';
-  searchForm.status = '' as Api.Notice.NoticeStatus;
-  searchForm.top = 0;
+  searchForm.status = '';
+  searchForm.top = '';
   searchForm.dateRange = [];
   current.value = 1;
 }
@@ -97,6 +110,12 @@ function handleCreate() {
 // 编辑公告
 function handleEdit(row: Api.Notice.NoticeInfo) {
   dialogMode.value = 'edit';
+  dialogNoticeId.value = row.id;
+  dialogVisible.value = true;
+}
+
+function handleView(row: Api.Notice.NoticeInfo) {
+  dialogMode.value = 'view';
   dialogNoticeId.value = row.id;
   dialogVisible.value = true;
 }
@@ -186,7 +205,13 @@ onMounted(() => {
         <ElCollapseItem title="搜索选项" name="1" class="search-item">
           <div class="search-bar">
             <ElInput v-model="searchForm.title" placeholder="按标题搜索" clearable class="search-input" />
-            <ElSelect v-model="searchForm.status" placeholder="状态" class="status-select" clearable>
+            <ElSelect
+              v-if="!isCommonUser"
+              v-model="searchForm.status"
+              placeholder="状态"
+              class="status-select"
+              clearable
+            >
               <ElOption label="草稿" value="draft" />
               <ElOption label="已发布" value="published" />
               <ElOption label="已下架" value="archived" />
@@ -214,8 +239,8 @@ onMounted(() => {
         <ElText class="mx-1" size="large">公告列表</ElText>
         <div class="actions-space">
           <ElButton type="primary" :loading="loading" @click="getNoticeList">刷新</ElButton>
-          <ElButton type="primary" @click="handleCreate">新增公告</ElButton>
-          <ElButton type="danger" @click="batchDelete">批量删除</ElButton>
+          <ElButton v-if="hasAuth(noticePermission.create)" type="primary" @click="handleCreate">新增公告</ElButton>
+          <ElButton v-if="hasAuth(noticePermission.delete)" type="danger" @click="batchDelete">批量删除</ElButton>
         </div>
       </div>
 
@@ -229,10 +254,16 @@ onMounted(() => {
         class="notice-table"
         @selection-change="handleSelectionChange"
       >
-        <ElTableColumn type="selection" fixed :reserve-selection="true" width="50"></ElTableColumn>
+        <ElTableColumn
+          v-if="hasAuth(noticePermission.delete)"
+          type="selection"
+          fixed
+          :reserve-selection="true"
+          width="50"
+        ></ElTableColumn>
         <ElTableColumn label="标题" min-width="300" show-overflow-tooltip>
           <template #default="{ row }">
-            <span class="notice-title" @click="() => handleEdit(row)">{{ row.title }}</span>
+            <span class="notice-title" @click="() => handleView(row)">{{ row.title }}</span>
           </template>
         </ElTableColumn>
         <ElTableColumn label="状态" width="100" align="center">
@@ -250,13 +281,28 @@ onMounted(() => {
         </ElTableColumn>
         <ElTableColumn prop="creatorName" label="创建者" width="120" />
         <ElTableColumn prop="createTime" label="创建时间" width="160" />
-        <ElTableColumn label="操作" width="280" align="center">
+        <ElTableColumn v-if="hasNoticeOperations" label="操作" width="280" align="center">
           <template #default="{ row }">
-            <ElButton type="primary" plain size="small" @click="() => handleEdit(row)">编辑</ElButton>
-            <ElButton :type="row.top === 1 ? 'info' : 'info'" plain size="small" @click="() => handleToggleTop(row)">
+            <ElButton
+              v-if="hasAuth(noticePermission.update)"
+              type="primary"
+              plain
+              size="small"
+              @click="() => handleEdit(row)"
+            >
+              编辑
+            </ElButton>
+            <ElButton
+              v-if="hasAuth(noticePermission.top)"
+              type="info"
+              plain
+              size="small"
+              @click="() => handleToggleTop(row)"
+            >
               {{ row.top === 1 ? '取消置顶' : '置顶' }}
             </ElButton>
             <ElButton
+              v-if="hasAuth(noticePermission.publish)"
               :type="row.status === 'published' ? 'warning' : 'success'"
               plain
               size="small"
@@ -264,7 +310,7 @@ onMounted(() => {
             >
               {{ row.status === 'published' ? '下架' : '发布' }}
             </ElButton>
-            <ElPopconfirm title="确认删除？" @confirm="() => handleDelete(row)">
+            <ElPopconfirm v-if="hasAuth(noticePermission.delete)" title="确认删除？" @confirm="() => handleDelete(row)">
               <template #reference>
                 <ElButton type="danger" plain size="small">删除</ElButton>
               </template>

@@ -1,0 +1,677 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-18",
+  "entries": [
+    {
+      "method": "GET",
+      "path": "/auth/getUserInfo",
+      "name": "获取登录用户信息",
+      "script": "scripts/auth/getUserInfo.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "Bearer Token 固定映射到用户、角色和按钮权限。"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "name": "账号登录",
+      "script": "scripts/auth/login.js",
+      "auth": false,
+      "verifyParams": {
+        "userName": "Soybean",
+        "password": "123456"
+      },
+      "notes": "按 userName 与 password 匹配四个固定账号。"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/refreshToken",
+      "name": "刷新登录令牌",
+      "script": "scripts/auth/refreshToken.js",
+      "auth": false,
+      "verifyParams": {
+        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjpbeyJ1c2VyTmFtZSI6IlNveWJlYW4ifV0sImlhdCI6MTY5ODQ4NDg4MSwiZXhwIjoxNzYxNTgwNzk5LCJhdWQiOiJzb3liZWFuLWFkbWluIiwiaXNzIjoiU295YmVhbiIsInN1YiI6IlNveWJlYW4ifQ.7dmgo1syEwEV4vaBf9k2oaxU6IZVgD2Ls7JK1p27STE"
+      },
+      "notes": "按固定 refreshToken 返回原账号令牌组合。"
+    },
+    {
+      "method": "GET",
+      "path": "/comments",
+      "name": "评论列表",
+      "script": "scripts/comments/list.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "普通列表保留二级回复；按作者筛选时会同时匹配回复。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/comments/:id",
+      "name": "删除评论",
+      "script": "scripts/comments/delete.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/comments/:id",
+      "name": "评论详情",
+      "script": "scripts/comments/detail.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "c002"
+      },
+      "notes": "可查询一级评论或二级回复。"
+    },
+    {
+      "method": "PUT",
+      "path": "/comments/:id",
+      "name": "编辑评论",
+      "script": "scripts/comments/update.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/comments/batch/audit",
+      "name": "批量审核评论",
+      "script": "scripts/comments/batch-audit.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/comments/batch/delete",
+      "name": "批量删除评论",
+      "script": "scripts/comments/batch-delete.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "name": "首页看板",
+      "script": "scripts/dashboard/get.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "统计值与固定用户、帖子、评论和举报集合一致。"
+    },
+    {
+      "method": "POST",
+      "path": "/forums",
+      "name": "新增板块",
+      "script": "scripts/forums/create.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "返回固定演示 ID 与图片地址；重新查询恢复基线。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/forums/:id",
+      "name": "删除板块",
+      "script": "scripts/forums/delete.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "PUT",
+      "path": "/forums/:id",
+      "name": "编辑板块",
+      "script": "scripts/forums/update.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/forums/move",
+      "name": "移动板块",
+      "script": "scripts/forums/move.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/forums/options",
+      "name": "启用板块选项",
+      "script": "scripts/forums/options.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "仅返回 status=1 的固定板块。"
+    },
+    {
+      "method": "GET",
+      "path": "/forums/tree",
+      "name": "板块树",
+      "script": "scripts/forums/tree.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "由固定平铺数据确定性构建两组父子树。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/notices",
+      "name": "批量删除公告",
+      "script": "scripts/notices/batch-delete.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/notices",
+      "name": "公告列表",
+      "script": "scripts/notices/list.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "支持标题、状态、置顶、日期筛选和分页。"
+    },
+    {
+      "method": "POST",
+      "path": "/notices",
+      "name": "新增公告",
+      "script": "scripts/notices/create.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/notices/:id",
+      "name": "删除公告",
+      "script": "scripts/notices/delete.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/notices/:id",
+      "name": "公告详情",
+      "script": "scripts/notices/detail.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "n001"
+      },
+      "notes": "按路径参数 id 返回安全渲染所需的固定富文本。"
+    },
+    {
+      "method": "PUT",
+      "path": "/notices/:id",
+      "name": "编辑公告",
+      "script": "scripts/notices/update.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/notices/:id/publish",
+      "name": "发布公告",
+      "script": "scripts/notices/publish.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/notices/:id/top",
+      "name": "公告置顶",
+      "script": "scripts/notices/top.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/permissions/tree",
+      "name": "权限树",
+      "script": "scripts/roles/permission-tree.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "分组节点仅展示；叶节点 id 与前端按钮权限码一致。"
+    },
+    {
+      "method": "GET",
+      "path": "/posts",
+      "name": "帖子列表",
+      "script": "scripts/posts/list.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "支持标题、作者、板块、状态、置顶、加精、日期筛选和分页。"
+    },
+    {
+      "method": "POST",
+      "path": "/posts",
+      "name": "新增帖子",
+      "script": "scripts/posts/create.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/posts/:id",
+      "name": "删除帖子",
+      "script": "scripts/posts/delete.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/:id",
+      "name": "帖子详情",
+      "script": "scripts/posts/detail.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "p001"
+      },
+      "notes": "按路径参数 id 返回列表中的同一帖子。"
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/:id",
+      "name": "编辑帖子",
+      "script": "scripts/posts/update.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/:id/essence",
+      "name": "帖子加精",
+      "script": "scripts/posts/essence.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/:id/top",
+      "name": "帖子置顶",
+      "script": "scripts/posts/top.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/batch/audit",
+      "name": "批量审核帖子",
+      "script": "scripts/posts/batch-audit.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/batch/delete",
+      "name": "批量删除帖子",
+      "script": "scripts/posts/batch-delete.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile",
+      "name": "个人资料",
+      "script": "scripts/profiles/profile.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 返回当前固定账号资料。"
+    },
+    {
+      "method": "PUT",
+      "path": "/profile",
+      "name": "更新个人资料",
+      "script": "scripts/profiles/update.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/profile/avatar",
+      "name": "上传头像",
+      "script": "scripts/uploads/avatar.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "返回固定 DiceBear 头像 URL。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/favorites",
+      "name": "个人收藏",
+      "script": "scripts/profiles/favorites.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 分页返回当前账号固定记录。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/history",
+      "name": "浏览历史",
+      "script": "scripts/profiles/history.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 分页返回当前账号固定记录。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/logs",
+      "name": "操作日志",
+      "script": "scripts/profiles/logs.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 分页返回当前账号固定记录。"
+    },
+    {
+      "method": "PUT",
+      "path": "/profile/password",
+      "name": "修改密码",
+      "script": "scripts/profiles/password.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/privacy",
+      "name": "隐私设置",
+      "script": "scripts/profiles/privacy.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 返回当前账号固定隐私设置。"
+    },
+    {
+      "method": "PUT",
+      "path": "/profile/privacy",
+      "name": "更新隐私设置",
+      "script": "scripts/profiles/update-privacy.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/sessions",
+      "name": "登录会话",
+      "script": "scripts/profiles/sessions.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 返回当前账号固定设备。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/stats",
+      "name": "个人统计",
+      "script": "scripts/profiles/stats.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "与当前固定账号动态保持一致。"
+    },
+    {
+      "method": "GET",
+      "path": "/profile/timeline",
+      "name": "个人动态",
+      "script": "scripts/profiles/timeline.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "根据 Authorization 分页返回当前账号固定记录。"
+    },
+    {
+      "method": "GET",
+      "path": "/reports",
+      "name": "举报聚合列表",
+      "script": "scripts/reports/list.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "支持状态、目标类型、举报人、日期筛选和分页。"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/:id",
+      "name": "举报聚合详情",
+      "script": "scripts/reports/detail.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "p008"
+      },
+      "notes": "id 对应聚合项 targetId。"
+    },
+    {
+      "method": "POST",
+      "path": "/reports/handle",
+      "name": "处理举报",
+      "script": "scripts/reports/handle.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/roles",
+      "name": "角色列表",
+      "script": "scripts/roles/list.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "支持角色标识、名称和 0/1 状态筛选。"
+    },
+    {
+      "method": "POST",
+      "path": "/roles",
+      "name": "新增角色",
+      "script": "scripts/roles/create.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/roles/:id",
+      "name": "删除角色",
+      "script": "scripts/roles/delete.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "R_ADMIN"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/roles/:id",
+      "name": "角色详情",
+      "script": "scripts/roles/detail.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "R_ADMIN"
+      },
+      "notes": "按角色标识返回详情。"
+    },
+    {
+      "method": "PUT",
+      "path": "/roles/:id",
+      "name": "编辑角色",
+      "script": "scripts/roles/update.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "R_ADMIN"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/roles/:id/permissions",
+      "name": "角色权限",
+      "script": "scripts/roles/permissions.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "R_ADMIN"
+      },
+      "notes": "返回指定角色的叶节点权限码。"
+    },
+    {
+      "method": "PUT",
+      "path": "/roles/:id/permissions",
+      "name": "分配角色权限",
+      "script": "scripts/roles/assign-permissions.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "R_ADMIN"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/system/configs",
+      "name": "读取系统配置",
+      "script": "scripts/configs/get.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "固定返回 basic、seo、feature、third_party 四组。"
+    },
+    {
+      "method": "PUT",
+      "path": "/system/configs",
+      "name": "保存系统配置",
+      "script": "scripts/configs/save.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "POST",
+      "path": "/uploadimage",
+      "name": "上传富文本图片",
+      "script": "scripts/uploads/image.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "返回固定演示图片 URL。"
+    },
+    {
+      "method": "POST",
+      "path": "/uploadvideo",
+      "name": "上传富文本视频",
+      "script": "scripts/uploads/video.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "返回固定演示视频与封面 URL。"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "name": "用户列表",
+      "script": "scripts/users/list.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "支持用户名、昵称、手机号、状态筛选和分页。"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "name": "新增用户",
+      "script": "scripts/users/create.js",
+      "auth": true,
+      "verifyParams": {},
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users/:id",
+      "name": "删除用户",
+      "script": "scripts/users/delete.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "GET",
+      "path": "/users/:id",
+      "name": "用户详情",
+      "script": "scripts/users/detail.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "3"
+      },
+      "notes": "按路径参数 id 返回固定用户。"
+    },
+    {
+      "method": "PUT",
+      "path": "/users/:id",
+      "name": "编辑用户",
+      "script": "scripts/users/update.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "PUT",
+      "path": "/users/:id/resetPwd",
+      "name": "重置用户密码",
+      "script": "scripts/users/reset-password.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "PUT",
+      "path": "/users/:id/roles",
+      "name": "分配用户角色",
+      "script": "scripts/users/assign-roles.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    },
+    {
+      "method": "PUT",
+      "path": "/users/:id/status",
+      "name": "修改用户状态",
+      "script": "scripts/users/update-status.js",
+      "auth": true,
+      "verifyParams": {
+        "id": "demo-id"
+      },
+      "notes": "交互演示响应；重新查询时恢复固定数据基线。"
+    }
+  ]
+}

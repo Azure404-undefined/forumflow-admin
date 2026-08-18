@@ -9,6 +9,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
+import { PERMISSION_CODES } from '@/constants/auth';
 import {
   auditComments,
   batchDeleteComments,
@@ -16,6 +17,7 @@ import {
   editComment,
   fetchCommentList
 } from '@/service/api/comment';
+import { useAuth } from '@/hooks/business/auth';
 import CustomPagination from '@/components/custom/pagination.vue';
 import RichTextEditor from '@/components/common/richTextEditor.vue';
 import DetailDialog from '../components/detailDialog.vue';
@@ -24,6 +26,10 @@ defineOptions({ name: 'CommentManager' });
 
 type CommentInfo = Api.Comment.CommentInfo;
 type CommentStatus = Api.Comment.CommentStatus;
+
+const { hasAuth } = useAuth();
+const commentPermission = PERMISSION_CODES.comment;
+const hasBatchPermission = computed(() => hasAuth([commentPermission.audit, commentPermission.delete]));
 
 /**
  * 状态映射：用于渲染筛选下拉与状态 Tag 的样式。
@@ -295,13 +301,30 @@ defineExpose({
         </div>
         <div class="actions-space">
           <ElButton type="primary" :loading="loading" @click="getCommentList">刷新</ElButton>
-          <ElButton type="success" :disabled="!selectedCount" @click="() => handleBatchAudit('published')">
+          <ElButton
+            v-if="hasAuth(commentPermission.audit)"
+            type="success"
+            :disabled="!selectedCount"
+            @click="() => handleBatchAudit('published')"
+          >
             批量通过
           </ElButton>
-          <ElButton type="warning" :disabled="!selectedCount" @click="() => handleBatchAudit('rejected')">
+          <ElButton
+            v-if="hasAuth(commentPermission.audit)"
+            type="warning"
+            :disabled="!selectedCount"
+            @click="() => handleBatchAudit('rejected')"
+          >
             批量驳回
           </ElButton>
-          <ElButton type="danger" :disabled="!hasNonDeletedSelected" @click="handleBatchDelete">批量删除</ElButton>
+          <ElButton
+            v-if="hasAuth(commentPermission.delete)"
+            type="danger"
+            :disabled="!hasNonDeletedSelected"
+            @click="handleBatchDelete"
+          >
+            批量删除
+          </ElButton>
         </div>
       </div>
 
@@ -315,7 +338,7 @@ defineExpose({
         :tree-props="{ children: 'none' }"
         @selection-change="handleSelectionChange"
       >
-        <ElTableColumn type="selection" fixed :reserve-selection="true" width="50" />
+        <ElTableColumn v-if="hasBatchPermission" type="selection" fixed :reserve-selection="true" width="50" />
 
         <!-- 评论人列：头像 + 名称-->
         <ElTableColumn label="评论人" width="120">
@@ -362,11 +385,16 @@ defineExpose({
         <ElTableColumn prop="createTime" label="创建时间" width="170" />
 
         <!-- 操作列 -->
-        <ElTableColumn label="操作" width="220" align="center">
+        <ElTableColumn
+          v-if="hasAuth([commentPermission.update, commentPermission.delete, commentPermission.audit])"
+          label="操作"
+          width="220"
+          align="center"
+        >
           <template #default="{ row }">
             <div class="table-actions">
               <ElButton
-                v-if="row.status !== 'published' && row.status !== 'deleted'"
+                v-if="hasAuth(commentPermission.audit) && row.status !== 'published' && row.status !== 'deleted'"
                 type="success"
                 plain
                 size="small"
@@ -375,7 +403,7 @@ defineExpose({
                 通过
               </ElButton>
               <ElButton
-                v-if="row.status !== 'rejected' && row.status !== 'deleted'"
+                v-if="hasAuth(commentPermission.audit) && row.status !== 'rejected' && row.status !== 'deleted'"
                 type="warning"
                 plain
                 size="small"
@@ -383,8 +411,24 @@ defineExpose({
               >
                 驳回
               </ElButton>
-              <ElButton type="primary" plain size="small" @click="() => openEdit(row)">编辑</ElButton>
-              <ElButton type="danger" plain size="small" @click="() => handleDelete(row)">删除</ElButton>
+              <ElButton
+                v-if="hasAuth(commentPermission.update)"
+                type="primary"
+                plain
+                size="small"
+                @click="() => openEdit(row)"
+              >
+                编辑
+              </ElButton>
+              <ElButton
+                v-if="hasAuth(commentPermission.delete)"
+                type="danger"
+                plain
+                size="small"
+                @click="() => handleDelete(row)"
+              >
+                删除
+              </ElButton>
             </div>
           </template>
         </ElTableColumn>
@@ -426,7 +470,9 @@ defineExpose({
       </ElForm>
       <template #footer>
         <ElButton @click="editVisible = false">取消</ElButton>
-        <ElButton type="primary" :loading="editLoading" @click="submitEdit">保存</ElButton>
+        <ElButton v-if="hasAuth(commentPermission.update)" type="primary" :loading="editLoading" @click="submitEdit">
+          保存
+        </ElButton>
       </template>
     </ElDialog>
 

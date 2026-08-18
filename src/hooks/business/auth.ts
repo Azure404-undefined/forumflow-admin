@@ -8,6 +8,10 @@ export function useAuth() {
       return false;
     }
 
+    if (authStore.isStaticSuper) {
+      return true;
+    }
+
     if (typeof codes === 'string') {
       return authStore.userInfo.buttons.includes(codes);
     }
@@ -15,7 +19,20 @@ export function useAuth() {
     return codes.some(code => authStore.userInfo.buttons.includes(code));
   }
 
+  function hasAllAuth(codes: string[]) {
+    if (!authStore.isLogin) {
+      return false;
+    }
+
+    if (authStore.isStaticSuper) {
+      return true;
+    }
+
+    return codes.every(code => authStore.userInfo.buttons.includes(code));
+  }
+
   return {
-    hasAuth
+    hasAuth,
+    hasAllAuth
   };
 }

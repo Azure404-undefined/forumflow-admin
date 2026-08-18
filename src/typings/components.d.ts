@@ -57,7 +57,6 @@ declare module 'vue' {
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
     ElSkeletonItem: typeof import('element-plus/es')['ElSkeletonItem']
     ElSpace: typeof import('element-plus/es')['ElSpace']
-    ElStatistic: typeof import('element-plus/es')['ElStatistic']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     ElTable: typeof import('element-plus/es')['ElTable']
@@ -79,7 +78,6 @@ declare module 'vue' {
     IconAntDesignReloadOutlined: typeof import('~icons/ant-design/reload-outlined')['default']
     IconGridiconsFullscreen: typeof import('~icons/gridicons/fullscreen')['default']
     IconGridiconsFullscreenExit: typeof import('~icons/gridicons/fullscreen-exit')['default']
-    IconLocalBanner: typeof import('~icons/local/banner')['default']
     IconMdiArrowDownThin: typeof import('~icons/mdi/arrow-down-thin')['default']
     IconMdiArrowUpThin: typeof import('~icons/mdi/arrow-up-thin')['default']
     IconMdiKeyboardEsc: typeof import('~icons/mdi/keyboard-esc')['default']
@@ -105,7 +103,6 @@ declare module 'vue' {
     WebSiteLink: typeof import('./../components/custom/web-site-link.vue')['default']
   }
   export interface GlobalDirectives {
-    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
@@ -157,7 +154,6 @@ declare global {
   const ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
   const ElSkeletonItem: typeof import('element-plus/es')['ElSkeletonItem']
   const ElSpace: typeof import('element-plus/es')['ElSpace']
-  const ElStatistic: typeof import('element-plus/es')['ElStatistic']
   const ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
   const ElSwitch: typeof import('element-plus/es')['ElSwitch']
   const ElTable: typeof import('element-plus/es')['ElTable']
@@ -179,7 +175,6 @@ declare global {
   const IconAntDesignReloadOutlined: typeof import('~icons/ant-design/reload-outlined')['default']
   const IconGridiconsFullscreen: typeof import('~icons/gridicons/fullscreen')['default']
   const IconGridiconsFullscreenExit: typeof import('~icons/gridicons/fullscreen-exit')['default']
-  const IconLocalBanner: typeof import('~icons/local/banner')['default']
   const IconMdiArrowDownThin: typeof import('~icons/mdi/arrow-down-thin')['default']
   const IconMdiArrowUpThin: typeof import('~icons/mdi/arrow-up-thin')['default']
   const IconMdiKeyboardEsc: typeof import('~icons/mdi/keyboard-esc')['default']

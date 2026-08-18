@@ -1,0 +1,46 @@
+[
+  {
+    "userId": "0",
+    "profile": { "id": "0", "username": "Soybean", "nickname": "林知夏", "email": "soybean@example.com", "phone": "13800000000", "avatar": "https://api.dicebear.com/9.x/avataaars/svg?seed=Soybean", "roles": ["R_SUPER"], "createTime": "2026-05-20 09:00:00" },
+    "stats": { "likes": 186, "follows": 36, "comments": 1 },
+    "timeline": [{ "id": "tl-0-1", "type": "post", "targetId": "p001", "title": "发布了帖子", "content": "Vue 3 组合式 API 的工程化实践", "createTime": "2026-08-18 08:30:00" }, { "id": "tl-0-2", "type": "comment", "targetId": "c002", "title": "回复了评论", "content": "后续会继续补充测试示例。", "createTime": "2026-08-18 09:12:00" }],
+    "history": [{ "id": "h-0-1", "targetId": "p005", "targetType": "post", "title": "如何组织一个可演示的后台项目", "viewTime": "2026-08-18 10:00:00" }],
+    "favorites": [{ "id": "fav-0-1", "targetId": "p002", "targetType": "post", "title": "TypeScript 类型契约如何减少联调成本", "collectTime": "2026-08-17 10:30:00" }],
+    "logs": [{ "id": "log-0-1", "action": "登录系统", "target": "管理后台", "ip": "192.0.2.10", "userAgent": "Chrome / Windows", "createTime": "2026-08-18 08:00:00" }],
+    "sessions": [{ "id": "session-0-1", "device": "Windows 桌面设备", "browser": "Chrome", "ip": "192.0.2.10", "loginTime": "2026-08-18 08:00:00", "isCurrent": true }],
+    "privacy": { "publicProfile": true, "publicFavorites": false, "publicHistory": false, "allowFollow": true, "allowComment": true, "allowPrivateMessage": true }
+  },
+  {
+    "userId": "1",
+    "profile": { "id": "1", "username": "Super", "nickname": "周景行", "email": "super@example.com", "phone": "13800000001", "avatar": "https://api.dicebear.com/9.x/avataaars/svg?seed=Super", "roles": ["R_SUPER"], "createTime": "2026-05-21 10:00:00" },
+    "stats": { "likes": 88, "follows": 29, "comments": 1 },
+    "timeline": [{ "id": "tl-1-1", "type": "post", "targetId": "p003", "title": "发布了帖子", "content": "接口分页与筛选的统一设计", "createTime": "2026-08-14 11:00:00" }, { "id": "tl-1-2", "type": "comment", "targetId": "c006", "title": "回复了评论", "content": "还要注意状态值 0 的判断。", "createTime": "2026-08-14 12:15:00" }],
+    "history": [{ "id": "h-1-1", "targetId": "p001", "targetType": "post", "title": "Vue 3 组合式 API 的工程化实践", "viewTime": "2026-08-18 09:30:00" }],
+    "favorites": [{ "id": "fav-1-1", "targetId": "p005", "targetType": "post", "title": "如何组织一个可演示的后台项目", "collectTime": "2026-08-15 11:00:00" }],
+    "logs": [{ "id": "log-1-1", "action": "查看举报", "target": "举报管理", "ip": "192.0.2.11", "userAgent": "Edge / Windows", "createTime": "2026-08-18 08:20:00" }],
+    "sessions": [{ "id": "session-1-1", "device": "Windows 桌面设备", "browser": "Edge", "ip": "192.0.2.11", "loginTime": "2026-08-18 08:10:00", "isCurrent": true }],
+    "privacy": { "publicProfile": true, "publicFavorites": true, "publicHistory": false, "allowFollow": true, "allowComment": true, "allowPrivateMessage": true }
+  },
+  {
+    "userId": "2",
+    "profile": { "id": "2", "username": "Admin", "nickname": "陈知行", "email": "admin@example.com", "phone": "13800000002", "avatar": "https://api.dicebear.com/9.x/avataaars/svg?seed=Admin", "roles": ["R_ADMIN"], "createTime": "2026-05-22 11:00:00" },
+    "stats": { "likes": 198, "follows": 41, "comments": 1 },
+    "timeline": [{ "id": "tl-2-1", "type": "post", "targetId": "p002", "title": "发布了帖子", "content": "TypeScript 类型契约如何减少联调成本", "createTime": "2026-08-16 14:20:00" }, { "id": "tl-2-2", "type": "post", "targetId": "p007", "title": "发布了帖子", "content": "社区运营周报：内容质量观察", "createTime": "2026-08-08 10:30:00" }],
+    "history": [{ "id": "h-2-1", "targetId": "p003", "targetType": "post", "title": "接口分页与筛选的统一设计", "viewTime": "2026-08-17 16:00:00" }],
+    "favorites": [{ "id": "fav-2-1", "targetId": "p001", "targetType": "post", "title": "Vue 3 组合式 API 的工程化实践", "collectTime": "2026-08-17 18:00:00" }],
+    "logs": [{ "id": "log-2-1", "action": "审核内容", "target": "帖子 p004", "ip": "192.0.2.12", "userAgent": "Chrome / macOS", "createTime": "2026-08-18 07:50:00" }],
+    "sessions": [{ "id": "session-2-1", "device": "macOS 桌面设备", "browser": "Chrome", "ip": "192.0.2.12", "loginTime": "2026-08-18 07:40:00", "isCurrent": true }, { "id": "session-2-2", "device": "Android 手机", "browser": "Chrome Mobile", "ip": "192.0.2.22", "loginTime": "2026-08-17 21:00:00", "isCurrent": false }],
+    "privacy": { "publicProfile": true, "publicFavorites": false, "publicHistory": false, "allowFollow": true, "allowComment": true, "allowPrivateMessage": false }
+  },
+  {
+    "userId": "3",
+    "profile": { "id": "3", "username": "User", "nickname": "苏念", "email": "user@example.com", "phone": "13800000003", "avatar": "https://api.dicebear.com/9.x/avataaars/svg?seed=User", "roles": ["R_USER_COMMON"], "createTime": "2026-05-23 12:00:00" },
+    "stats": { "likes": 205, "follows": 52, "comments": 3 },
+    "timeline": [{ "id": "tl-3-1", "type": "post", "targetId": "p005", "title": "发布了帖子", "content": "如何组织一个可演示的后台项目", "createTime": "2026-08-12 18:30:00" }, { "id": "tl-3-2", "type": "comment", "targetId": "c001", "title": "发表了评论", "content": "职责拆分这部分很实用。", "createTime": "2026-08-18 09:00:00" }, { "id": "tl-3-3", "type": "comment", "targetId": "c015", "title": "发表了评论", "content": "固定时间段对我也有效。", "createTime": "2026-07-30 09:00:00" }],
+    "history": [{ "id": "h-3-1", "targetId": "p001", "targetType": "post", "title": "Vue 3 组合式 API 的工程化实践", "viewTime": "2026-08-18 09:00:00" }, { "id": "h-3-2", "targetId": "p002", "targetType": "post", "title": "TypeScript 类型契约如何减少联调成本", "viewTime": "2026-08-17 20:00:00" }],
+    "favorites": [{ "id": "fav-3-1", "targetId": "p001", "targetType": "post", "title": "Vue 3 组合式 API 的工程化实践", "collectTime": "2026-08-18 09:05:00" }, { "id": "fav-3-2", "targetId": "p006", "targetType": "post", "title": "我的第一个管理后台复盘", "collectTime": "2026-08-11 10:00:00" }],
+    "logs": [{ "id": "log-3-1", "action": "查看帖子", "target": "帖子 p001", "ip": "192.0.2.13", "userAgent": "Safari / iOS", "createTime": "2026-08-18 09:00:00" }],
+    "sessions": [{ "id": "session-3-1", "device": "iPhone", "browser": "Safari", "ip": "192.0.2.13", "loginTime": "2026-08-18 08:45:00", "isCurrent": true }],
+    "privacy": { "publicProfile": true, "publicFavorites": true, "publicHistory": false, "allowFollow": true, "allowComment": true, "allowPrivateMessage": true }
+  }
+]

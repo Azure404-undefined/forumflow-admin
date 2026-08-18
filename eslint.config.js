@@ -1,7 +1,7 @@
 import { defineConfig } from '@soybeanjs/eslint-config';
 
 export default defineConfig(
-  { vue: true, unocss: true },
+  { vue: true, unocss: true, ignores: ['apifox-mock/**'] },
   {
     rules: {
       'vue/multi-word-component-names': [

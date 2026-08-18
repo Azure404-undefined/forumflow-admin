@@ -9,10 +9,15 @@
  */
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { fetchReportDetail, fetchReportList, handleReport } from '@/service/api/report';
+import { PERMISSION_CODES } from '@/constants/auth';
 import { fetchCommentDetail } from '@/service/api/comment';
+import { fetchReportDetail, fetchReportList, handleReport } from '@/service/api/report';
+import { useAuth } from '@/hooks/business/auth';
 import CustomPagination from '@/components/custom/pagination.vue';
 import DetailDialog from '../post/components/detailDialog.vue';
+
+const { hasAuth } = useAuth();
+const reportPermission = PERMISSION_CODES.report;
 
 // 举报原因类型别名，便于使用映射表
 type Reason = Api.Report.ReportReason;
@@ -402,7 +407,7 @@ onMounted(() => {
           <template #default="{ row }">
             <ElButton type="info" plain size="small" @click="viewReport(row, 0)">查看详情</ElButton>
             <ElButton
-              v-if="row.status === 'pending'"
+              v-if="row.status === 'pending' && hasAuth(reportPermission.handle)"
               type="success"
               plain
               size="small"
@@ -411,7 +416,7 @@ onMounted(() => {
               通过
             </ElButton>
             <ElButton
-              v-if="row.status === 'pending'"
+              v-if="row.status === 'pending' && hasAuth(reportPermission.handle)"
               type="warning"
               plain
               size="small"
@@ -419,7 +424,7 @@ onMounted(() => {
             >
               驳回
             </ElButton>
-            <ElButton v-else type="info" plain size="small" disabled>已处理</ElButton>
+            <ElButton v-else-if="row.status !== 'pending'" type="info" plain size="small" disabled>已处理</ElButton>
           </template>
         </ElTableColumn>
       </ElTable>
@@ -510,12 +515,33 @@ onMounted(() => {
           </div>
           <div v-if="currentReport?.status !== 'pending'">处理时间：{{ currentReport?.handleTime }}</div>
           <div>处理备注（选填）</div>
-          <ElInput v-model="remark" class="textarea" :rows="3" type="textarea" placeholder="状态处理描述..." />
+          <ElInput
+            v-model="remark"
+            class="textarea"
+            :rows="3"
+            type="textarea"
+            placeholder="状态处理描述..."
+            :disabled="!hasAuth(reportPermission.handle)"
+          />
         </ElCard>
         <div class="report-button">
           <ElButton type="default" size="large" @click="drawerCancel">取消</ElButton>
-          <ElButton type="danger" size="large" @click="drawerApprove">通过举报</ElButton>
-          <ElButton type="primary" size="large" @click="drawerReject">驳回举报</ElButton>
+          <ElButton
+            v-if="currentReport?.status === 'pending' && hasAuth(reportPermission.handle)"
+            type="danger"
+            size="large"
+            @click="drawerApprove"
+          >
+            通过举报
+          </ElButton>
+          <ElButton
+            v-if="currentReport?.status === 'pending' && hasAuth(reportPermission.handle)"
+            type="primary"
+            size="large"
+            @click="drawerReject"
+          >
+            驳回举报
+          </ElButton>
         </div>
       </div>
     </ElDrawer>

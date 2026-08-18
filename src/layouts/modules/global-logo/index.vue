@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-
 defineOptions({ name: 'GlobalLogo' });
 
 interface Props {
@@ -14,10 +12,10 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <RouterLink to="/" class="w-full flex-center nowrap-hidden">
+  <RouterLink to="/" class="w-full flex-y-center nowrap-hidden pl-16px" aria-label="ForumFlow 社区内容管理平台">
     <SystemLogo class="size-32px" />
     <h2 v-show="showTitle" class="pl-8px text-16px text-primary font-bold transition duration-300 ease-in-out">
-      {{ $t('system.title') }}
+      ForumFlow
     </h2>
   </RouterLink>
 </template>

@@ -15,11 +15,13 @@ import {
   setPostTop
 } from '@/service/api/post';
 import { useAuthStore } from '@/store/modules/auth';
+import { useAppStore } from '@/store/modules/app';
 import { useAuth } from '@/hooks/business/auth';
 import CustomPagination from '@/components/custom/pagination.vue';
 import DetailDialog from '../components/detailDialog.vue';
 
 const authStore = useAuthStore();
+const appStore = useAppStore();
 const { hasAuth } = useAuth();
 const postPermission = PERMISSION_CODES.post;
 const isCommonUser = computed(() => authStore.userInfo.roles.includes(APP_ROLES.common));
@@ -58,6 +60,25 @@ function detailOpen(row: Api.Post.PostInfo) {
   detailMode.value = 'view';
   detailPostId.value = row.id;
   detailVisible.value = true;
+}
+
+function getStatusText(status: Api.Post.PostStatus) {
+  const textMap: Record<Api.Post.PostStatus, string> = {
+    draft: '草稿',
+    published: '已发布',
+    pending: '待审核',
+    rejected: '已驳回',
+    deleted: '已删除'
+  };
+
+  return textMap[status];
+}
+
+function getStatusType(status: Api.Post.PostStatus): 'success' | 'warning' | 'danger' | 'info' {
+  if (status === 'published') return 'success';
+  if (status === 'pending') return 'warning';
+  if (status === 'rejected') return 'danger';
+  return 'info';
 }
 
 function clearAllSelection() {
@@ -338,7 +359,78 @@ onMounted(() => {
           <ElButton v-if="hasAuth(postPermission.delete)" type="danger" @click="batchDelete">批量删除</ElButton>
         </div>
       </div>
+      <div v-if="appStore.isMobile" v-loading="loading" class="mobile-post-list">
+        <article v-for="row in posts" :key="row.id" class="mobile-post-card">
+          <button type="button" class="mobile-post-title" @click="detailOpen(row)">
+            {{ row.title }}
+          </button>
+          <div class="mobile-post-meta">
+            <span>
+              <SvgIcon icon="mdi:account-outline" />
+              {{ row.authorName }}
+            </span>
+            <span>
+              <SvgIcon icon="mdi:forum-outline" />
+              {{ row.forumName }}
+            </span>
+            <span>
+              <SvgIcon icon="mdi:clock-outline" />
+              {{ row.createTime.slice(0, 10) }}
+            </span>
+          </div>
+          <div class="mobile-post-tags">
+            <ElTag :type="getStatusType(row.status)" size="small">{{ getStatusText(row.status) }}</ElTag>
+            <ElTag v-if="row.top === 1" type="info" size="small">置顶</ElTag>
+            <ElTag v-if="row.essence === 1" type="success" size="small">加精</ElTag>
+          </div>
+          <div class="mobile-post-stats">
+            <span>
+              <SvgIcon icon="mdi:eye-outline" />
+              {{ row.viewCount }}
+            </span>
+            <span>
+              <SvgIcon icon="mdi:thumb-up-outline" />
+              {{ row.likeCount }}
+            </span>
+            <span>
+              <SvgIcon icon="mdi:comment-outline" />
+              {{ row.commentCount }}
+            </span>
+          </div>
+          <div v-if="hasPostWritePermission" class="mobile-post-actions">
+            <ElButton v-if="hasAuth(postPermission.update)" link type="primary" @click="handleEdit(row)">编辑</ElButton>
+            <ElButton v-if="hasAuth(postPermission.top)" link type="primary" @click="handleToggleTop(row)">
+              {{ row.top === 1 ? '取消置顶' : '置顶' }}
+            </ElButton>
+            <ElButton v-if="hasAuth(postPermission.essence)" link type="primary" @click="handleToggleEssence(row)">
+              {{ row.essence === 1 ? '取消加精' : '加精' }}
+            </ElButton>
+            <ElButton
+              v-if="row.status === 'pending' && hasAuth(postPermission.audit)"
+              link
+              type="success"
+              @click="handleAuditSingle(row, true)"
+            >
+              通过
+            </ElButton>
+            <ElButton
+              v-if="row.status === 'pending' && hasAuth(postPermission.audit)"
+              link
+              type="warning"
+              @click="handleAuditSingle(row, false)"
+            >
+              驳回
+            </ElButton>
+            <ElPopconfirm v-if="hasAuth(postPermission.delete)" title="确认删除？" @confirm="handleDelete(row)">
+              <template #reference><ElButton link type="danger">删除</ElButton></template>
+            </ElPopconfirm>
+          </div>
+        </article>
+        <ElEmpty v-if="!loading && posts.length === 0" description="暂无帖子" />
+      </div>
+
       <ElTable
+        v-else
         ref="tableRef"
         v-loading="loading"
         :data="posts"
@@ -584,6 +676,78 @@ onMounted(() => {
     }
   }
 
+  .mobile-post-list {
+    display: grid;
+    gap: 12px;
+    min-height: 240px;
+  }
+
+  .mobile-post-card {
+    padding: 16px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+    background: var(--el-bg-color);
+    box-shadow: 0 5px 18px rgb(31 35 48 / 5%);
+  }
+
+  .mobile-post-title {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--el-text-color-primary);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 650;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .mobile-post-meta,
+  .mobile-post-stats,
+  .mobile-post-tags,
+  .mobile-post-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+  }
+
+  .mobile-post-meta {
+    margin-top: 10px;
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+
+    span {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+  }
+
+  .mobile-post-tags {
+    margin-top: 12px;
+  }
+
+  .mobile-post-stats {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--el-border-color-extra-light);
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+
+    span {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+  }
+
+  .mobile-post-actions {
+    margin-top: 8px;
+  }
+
   // 作者列：头像 + 名称（参考评论管理）
   .author-cell {
     display: flex;
@@ -624,6 +788,26 @@ onMounted(() => {
 
   .drawerFooter {
     margin-top: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .card-wrapper {
+      padding: 0;
+
+      :deep(.el-card__body) {
+        padding: 16px;
+      }
+    }
+
+    .card-header {
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .pagination-wrap {
+      justify-content: center;
+      padding-top: 16px;
+    }
   }
 }
 </style>

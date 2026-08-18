@@ -385,6 +385,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="总用户数"
                 :value="dashboardData.core.totalUsers"
+                :growth-rate="9.09"
                 icon="rivet-icons:user-group-solid"
                 color="#00bcff"
               />
@@ -393,6 +394,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="日活跃用户"
                 :value="dashboardData.core.dau"
+                :growth-rate="14.29"
                 icon="lets-icons:line-up"
                 color="#82ff00"
               />
@@ -401,6 +403,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="月活跃用户"
                 :value="dashboardData.core.mau"
+                :growth-rate="0"
                 icon="stash:user-clock"
                 color="#ff9700"
               />
@@ -409,6 +412,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="总帖数"
                 :value="dashboardData.core.totalPosts"
+                :growth-rate="9.09"
                 icon="iconoir:post"
                 color="#ffec62"
               />
@@ -417,6 +421,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="总评论数"
                 :value="dashboardData.core.totalComments"
+                :growth-rate="12.5"
                 icon="mingcute:comment-line"
                 color="#e462ff"
               />
@@ -425,6 +430,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="今日新增帖"
                 :value="dashboardData.core.newPostsToday"
+                :growth-rate="0"
                 icon="streamline-ultimate:pen-write"
                 color="skyblue"
               />
@@ -433,6 +439,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="今日新增评"
                 :value="dashboardData.core.newCommentsToday"
+                :growth-rate="100"
                 icon="mdi:comment-text-outline"
                 color="#50e149"
               />
@@ -441,6 +448,7 @@ onUnmounted(() => {
               <StatisticCard
                 title="待处理举报"
                 :value="dashboardData.core.pendingReports"
+                :growth-rate="-33.33"
                 icon="ic:round-report"
                 color="orange"
               />

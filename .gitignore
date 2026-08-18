@@ -7,7 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-docs
+docs/*
+!docs/screenshots/
+!docs/screenshots/**
 node_modules
 AGENTS.md
 CLAUDE.md
@@ -43,3 +45,4 @@ yarn.lock
 .env
 .env.*
 !.env.example
+!.env.prod

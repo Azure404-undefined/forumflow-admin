@@ -1,23 +1,25 @@
 {
-  "name": "@sa/elp",
+  "name": "forumflow-admin",
   "type": "module",
   "version": "1.4.0",
-  "description": "A forum / content community admin system based on SoybeanAdmin ElementPlus. 基于 SoybeanAdmin ElementPlus 二开的论坛/内容社区后台管理系统。",
+  "description": "ForumFlow 社区内容管理平台，覆盖内容审核、用户与角色管理、板块配置、公告管理和个人中心。",
   "author": {
     "name": "Azure404-undefined",
     "url": "https://github.com/Azure404-undefined"
   },
   "license": "MIT",
-  "homepage": "https://github.com/Azure404-undefined/soybean-admin-element-plus",
+  "homepage": "https://github.com/Azure404-undefined/forumflow-admin",
   "repository": {
-    "url": "https://github.com/Azure404-undefined/soybean-admin-element-plus.git"
+    "url": "https://github.com/Azure404-undefined/forumflow-admin.git"
   },
   "bugs": {
-    "url": "https://github.com/Azure404-undefined/soybean-admin-element-plus/issues"
+    "url": "https://github.com/Azure404-undefined/forumflow-admin/issues"
   },
   "keywords": [
-    "Vue3 admin ",
-    "vue-admin-template",
+    "forum-admin",
+    "content-moderation",
+    "rbac",
+    "vue3-admin",
     "Vite7",
     "rolldown-vite",
     "TypeScript",
@@ -132,5 +134,5 @@
     "commit-msg": "pnpm sa git-commit-verify",
     "pre-commit": "pnpm typecheck && pnpm lint && git diff --exit-code"
   },
-  "website": "https://github.com/Azure404-undefined/soybean-admin-element-plus"
+  "website": ""
 }

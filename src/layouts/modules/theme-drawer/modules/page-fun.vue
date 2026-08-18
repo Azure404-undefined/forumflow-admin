@@ -118,11 +118,8 @@ const isWrapperScrollMode = computed(() => themeStore.layout.scrollMode === 'wra
         type="text"
         size="small"
         class="w-120px"
-        placeholder="SoybeanAdmin"
+        placeholder="ForumFlow"
       />
-    </SettingItem>
-    <SettingItem key="9" :label="$t('theme.header.multilingual.visible')">
-      <ElSwitch v-model="themeStore.header.multilingual.visible" />
     </SettingItem>
     <SettingItem key="10" :label="$t('theme.header.globalSearch.visible')">
       <ElSwitch v-model="themeStore.header.globalSearch.visible" />

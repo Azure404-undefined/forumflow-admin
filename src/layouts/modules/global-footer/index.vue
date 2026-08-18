@@ -6,12 +6,8 @@ defineOptions({
 
 <template>
   <DarkModeContainer class="h-full flex-center">
-    <a
-      href="https://github.com/soybeanjs/soybean-admin-elp/blob/main/LICENSE"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Copyright MIT © 2021 Soybean
+    <a href="https://github.com/Azure404-undefined/forumflow-admin" target="_blank" rel="noopener noreferrer">
+      ForumFlow · MIT License
     </a>
   </DarkModeContainer>
 </template>

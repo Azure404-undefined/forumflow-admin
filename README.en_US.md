@@ -1,37 +1,70 @@
 <div align="center">
-  <h1>Forum Admin System</h1>
-  <span><a href="./README.md">中文</a> | English</span>
+  <img src="./public/forumflow-logo.png" width="112" alt="ForumFlow Logo" />
+  <h1>ForumFlow Community Admin</h1>
+  <p>Moderation, operations, and role management for forum communities</p>
+  <p><strong>Live demo:</strong> will be added after the first Vercel deployment</p>
+  <p><a href="./README.md">中文</a> | English</p>
 </div>
 
 ---
 
-An admin dashboard for a forum / content community, built on top of the [SoybeanAdmin ElementPlus](https://github.com/soybeanjs/soybean-admin-element-plus) template.
+ForumFlow is a Vue 3, TypeScript, and Element Plus community operations dashboard. It covers content moderation, users and roles, forum settings, notices, analytics, and profile workflows.
 
-## Custom-built features
+## Preview
 
-- **Business pages** (`src/views/`): post list, forum boards, post comments (with detail dialog), reports, roles, users, profile, and a rebuilt home dashboard
-- **Business API layer** (`src/service/api/`): 11 modules integrated with Apifox online mocks
-- **Global type declarations** (`src/typings/api/`)
-- **Component wrappers**: pagination, DOMPurify-safe content rendering (`safeContend.vue`), rich text editor (`richTextEditor.vue`)
-- **Responsive design**: full mobile/narrow-screen adaptation
+| Operations dashboard | Post moderation |
+| --- | --- |
+| ![ForumFlow dashboard](./docs/screenshots/home-desktop.png) | ![ForumFlow post management](./docs/screenshots/post-list-desktop.png) |
 
-## Tech stack
+<p align="center">
+  <img src="./docs/screenshots/common-user-mobile.png" width="320" alt="ForumFlow read-only mobile view" />
+</p>
 
-Vue 3.5 · TypeScript · Vite 7 (rolldown-vite) · Element Plus · Pinia · UnoCSS · pnpm workspace
+## Demo accounts
 
-## Getting started
+| Role | Username | Password | Access |
+| --- | --- | --- | --- |
+| Super administrator | <code>Super</code> | <code>123456</code> | Every module, role permissions, and system settings |
+| Administrator | <code>Admin</code> | <code>123456</code> | Users, posts, forums, comments, reports, and notices |
+| Community user | <code>User</code> | <code>123456</code> | Published posts, enabled forums, and published notices |
 
-```bash
-# Requirements: Node >= 20.19.0, pnpm >= 8.7.0
+The demo uses a deterministic baseline. Mutations demonstrate UI feedback; refreshing or querying again restores the baseline.
+
+## Highlights
+
+- Static-route RBAC plus centralized button permission codes.
+- Protected-account rules that limit administrators to community users.
+- 68 self-contained Apifox scripts generated from one fixed, relational dataset.
+- DOMPurify-based rich-text rendering with an HTTPS iframe host allowlist.
+- Responsive business pages for desktop and 390px-class mobile screens.
+- TypeScript contracts aligned with the business API modules.
+
+## Stack
+
+Vue 3.5 · TypeScript 5.9 · Vite 7 · Element Plus · Pinia · Vue Router · UnoCSS · pnpm workspace · Apifox Mock · WangEditor · DOMPurify
+
+## Run locally
+
+Requirements: Node.js <code>>=20.19.0</code>, pnpm <code>>=8.7.0</code>.
+
+~~~bash
 pnpm install
 cp .env.example .env
-pnpm dev        # dev mode (test env, Apifox mock APIs)
-pnpm build      # production build
-```
+pnpm dev
+~~~
 
-## Upstream
+Verification:
 
-Forked from [soybean-admin-element-plus](https://github.com/soybeanjs/soybean-admin-element-plus) (MIT licensed). Demo pages (dashboard / multi-menu, etc.) were removed and replaced with the business features above.
+~~~bash
+pnpm typecheck
+pnpm exec eslint .
+pnpm build
+node apifox-mock/tools/verify.mjs
+~~~
+
+## Technical origin
+
+The project uses [SoybeanAdmin ElementPlus](https://github.com/soybeanjs/soybean-admin-element-plus) as its engineering foundation. My primary work covers the business pages, API and type contracts, RBAC, deterministic Apifox demos, safe rich-text rendering, and responsive adaptation. Both projects use the MIT license.
 
 ## License
 

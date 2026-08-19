@@ -3,7 +3,7 @@
   <h1>ForumFlow 社区内容管理平台</h1>
   <p>面向论坛与内容社区的审核、运营和权限管理后台</p>
   <p><strong>在线演示：</strong><a href="https://forumflow-admin.vercel.app/">https://forumflow-admin.vercel.app/</a></p>
-  <p>中文 | <a href="./README.en_US.md">English</a></p>
+  <p>中文 | <a href="./README.en_US.md">English</a> · <a href="./CHANGELOG.md">更新日志</a></p>
 </div>
 
 ---

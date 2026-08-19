@@ -3,7 +3,7 @@
   <h1>ForumFlow Community Admin</h1>
   <p>Moderation, operations, and role management for forum communities</p>
   <p><strong>Live demo:</strong> <a href="https://forumflow-admin.vercel.app/">https://forumflow-admin.vercel.app/</a></p>
-  <p><a href="./README.md">中文</a> | English</p>
+  <p><a href="./README.md">中文</a> | English · <a href="./CHANGELOG.md">Changelog</a></p>
 </div>
 
 ---

@@ -134,5 +134,5 @@
     "commit-msg": "pnpm sa git-commit-verify",
     "pre-commit": "pnpm typecheck && pnpm lint && git diff --exit-code"
   },
-  "website": ""
+  "website": "https://forumflow-admin.vercel.app/"
 }

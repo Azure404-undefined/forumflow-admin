@@ -2,7 +2,7 @@
   <img src="./public/forumflow-logo.png" width="112" alt="ForumFlow Logo" />
   <h1>ForumFlow Community Admin</h1>
   <p>Moderation, operations, and role management for forum communities</p>
-  <p><strong>Live demo:</strong> will be added after the first Vercel deployment</p>
+  <p><strong>Live demo:</strong> <a href="https://forumflow-admin.vercel.app/">https://forumflow-admin.vercel.app/</a></p>
   <p><a href="./README.md">中文</a> | English</p>
 </div>
 

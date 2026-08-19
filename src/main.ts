@@ -3,7 +3,7 @@ import './plugins/assets';
 import {
   setupAppVersionNotification,
   setupDayjs,
-  setupIconifyOffline,
+  setupIconify,
   setupLoading,
   setupNProgress,
   setupUI
@@ -18,7 +18,7 @@ async function setupApp() {
 
   setupNProgress();
 
-  setupIconifyOffline();
+  setupIconify();
 
   setupDayjs();
 

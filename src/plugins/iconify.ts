@@ -1,7 +1,10 @@
-import { addCollection } from '@iconify/vue/offline';
-import offlineIconCollections from '@/assets/iconify-offline';
+import { addAPIProvider } from '@iconify/vue';
 
-/** Register the Iconify icons used by runtime-rendered components. */
-export function setupIconifyOffline() {
-  offlineIconCollections.forEach(collection => addCollection(collection));
+/** Configure an optional custom Iconify API provider. */
+export function setupIconify() {
+  const { VITE_ICONIFY_URL } = import.meta.env;
+
+  if (VITE_ICONIFY_URL) {
+    addAPIProvider('', { resources: [VITE_ICONIFY_URL] });
+  }
 }

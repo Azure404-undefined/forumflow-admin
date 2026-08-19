@@ -33,6 +33,7 @@ The demo uses a deterministic baseline. Mutations demonstrate UI feedback; refre
 ## Highlights
 
 - Static-route RBAC plus centralized button permission codes.
+- Runtime Iconify icons load on demand from its public API; deployment CSP must allow the primary and two fallback hosts in <code>connect-src</code>, otherwise dynamic icons render empty.
 - Protected-account rules that limit administrators to community users.
 - 68 self-contained Apifox scripts generated from one fixed, relational dataset.
 - DOMPurify-based rich-text rendering with an HTTPS iframe host allowlist.

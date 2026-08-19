@@ -1,6 +1,7 @@
 <div align="center">
   <img src="./public/forumflow-logo.png" width="112" alt="ForumFlow Logo" />
   <h1>ForumFlow 社区内容管理平台</h1>
+  <p><a href="https://github.com/Azure404-undefined/forumflow-admin/actions/workflows/ci.yml"><img src="https://github.com/Azure404-undefined/forumflow-admin/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a></p>
   <p>面向论坛与内容社区的审核、运营和权限管理后台</p>
   <p><strong>在线演示：</strong><a href="https://forumflow-admin.vercel.app/">https://forumflow-admin.vercel.app/</a></p>
   <p>中文 | <a href="./README.en_US.md">English</a> · <a href="./CHANGELOG.md">更新日志</a></p>

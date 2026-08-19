@@ -1,6 +1,7 @@
 <div align="center">
   <img src="./public/forumflow-logo.png" width="112" alt="ForumFlow Logo" />
   <h1>ForumFlow Community Admin</h1>
+  <p><a href="https://github.com/Azure404-undefined/forumflow-admin/actions/workflows/ci.yml"><img src="https://github.com/Azure404-undefined/forumflow-admin/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a></p>
   <p>Moderation, operations, and role management for forum communities</p>
   <p><strong>Live demo:</strong> <a href="https://forumflow-admin.vercel.app/">https://forumflow-admin.vercel.app/</a></p>
   <p><a href="./README.md">中文</a> | English · <a href="./CHANGELOG.md">Changelog</a></p>

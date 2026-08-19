@@ -39,6 +39,7 @@
     "commit:zh": "sa git-commit -l=zh-cn",
     "dev": "vite --mode test",
     "dev:prod": "vite --mode prod",
+    "gen-icons": "node scripts/generate-offline-icons.mjs",
     "gen-route": "sa gen-route",
     "lint": "eslint . --fix",
     "prepare": "simple-git-hooks",

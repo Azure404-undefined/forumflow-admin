@@ -1,7 +1,7 @@
 {
   "name": "forumflow-admin",
   "type": "module",
-  "version": "1.4.0",
+  "version": "2.1.0",
   "description": "ForumFlow 社区内容管理平台，覆盖内容审核、用户与角色管理、板块配置、公告管理和个人中心。",
   "author": {
     "name": "Azure404-undefined",

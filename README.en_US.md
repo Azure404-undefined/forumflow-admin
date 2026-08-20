@@ -4,6 +4,7 @@
   <p><a href="https://github.com/Azure404-undefined/forumflow-admin/actions/workflows/ci.yml"><img src="https://github.com/Azure404-undefined/forumflow-admin/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a></p>
   <p>Moderation, operations, and role management for forum communities</p>
   <p><strong>Live demo:</strong> <a href="https://forumflow-admin.vercel.app/">https://forumflow-admin.vercel.app/</a></p>
+  <p><strong>CloudBase demo：</strong><a href="https://forumflow-admin-private-project-d8ficqljdf83631a.webapps.tcloudbase.com">https://forumflow-admin-private-project-d8ficqljdf83631a.webapps.tcloudbase.com</a></p>
   <p><a href="./README.md">中文</a> | English · <a href="./CHANGELOG.md">Changelog</a></p>
 </div>
 

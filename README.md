@@ -19,10 +19,6 @@ ForumFlow 是一个基于 Vue 3、TypeScript 和 Element Plus 实现的社区内
 | --- | --- |
 | ![ForumFlow 首页数据看板](./docs/screenshots/home-desktop.png) | ![ForumFlow 帖子管理](./docs/screenshots/post-list-desktop.png) |
 
-<p align="center">
-  <img src="./docs/screenshots/common-user-mobile.png" width="320" alt="ForumFlow 普通用户移动端只读页面" />
-</p>
-
 ## 演示账号
 
 | 角色 | 用户名 | 密码 | 主要能力 |

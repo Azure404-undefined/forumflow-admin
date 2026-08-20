@@ -17,10 +17,6 @@ ForumFlow is a Vue 3, TypeScript, and Element Plus community operations dashboar
 | --- | --- |
 | ![ForumFlow dashboard](./docs/screenshots/home-desktop.png) | ![ForumFlow post management](./docs/screenshots/post-list-desktop.png) |
 
-<p align="center">
-  <img src="./docs/screenshots/common-user-mobile.png" width="320" alt="ForumFlow read-only mobile view" />
-</p>
-
 ## Demo accounts
 
 | Role | Username | Password | Access |

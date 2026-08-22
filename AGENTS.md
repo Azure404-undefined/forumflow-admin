@@ -9,8 +9,7 @@
 - 在线演示：<https://forumflow-admin.vercel.app/>。
 - 技术栈：Vue 3、TypeScript、Vite、Element Plus、Pinia、Vue Router、UnoCSS、pnpm workspace。
 - 业务范围：数据看板、用户与角色、帖子、板块、评论、举报、公告、系统配置和个人中心。
-- 工程基础来自 SoybeanAdmin ElementPlus；保留 MIT 来源和真实依赖名称，但产品界面与项目说明统一使用 ForumFlow。
-- 当前版本面向求职作品展示，重点是业务页面、类型契约、RBAC、固定 Apifox 数据、富文本安全和移动端适配。
+- 工程基础来自 SoybeanAdmin ElementPlus；保留 MIT 来源和真实依赖名称，但产品界面与项目说明统一使用 
 
 ## 2. 关键目录
 

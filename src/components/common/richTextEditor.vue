@@ -2,10 +2,10 @@
 import '@wangeditor/editor/dist/css/style.css';
 import { nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import { ElMessage } from 'element-plus';
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
 import type { IDomEditor, IToolbarConfig } from '@wangeditor/editor';
 import { uploadImage, uploadVideo } from '@/service/api/post';
+import { createUploadNotification } from '@/utils/upload-notification';
 
 const props = defineProps<{
   modelValue: string;
@@ -38,27 +38,33 @@ const editorConfig = {
         file: File,
         insertFn: (url: string | undefined, alt: string | undefined, href: string | undefined) => void
       ) => {
+        const notification = createUploadNotification('正在上传图片');
         // file 即选中的图片文件，insertFn 可将图片插入编辑器
         try {
           // 调用后端上传接口
-          const res = await uploadImage(file);
+          const res = await uploadImage(file, notification.update);
+          if (res.error) throw res.error;
           // 后端返回图片URL、alt和href，插入到编辑器中
           insertFn(res.data?.url, res.data?.alt, res.data?.href);
-        } catch {
-          ElMessage.error('图片上传失败，请重试');
+          notification.success();
+        } catch (error) {
+          notification.fail(error);
         }
       }
     },
     uploadVideo: {
       customUpload: async (file: File, insertFn: (url: string | undefined, poster: string | undefined) => void) => {
+        const notification = createUploadNotification('正在上传视频');
         // file 即选中的图片文件，insertFn 可将视频插入编辑器
         try {
           // 调用后端上传接口
-          const res = await uploadVideo(file);
+          const res = await uploadVideo(file, notification.update);
+          if (res.error) throw res.error;
           // 后端返回视频
           insertFn(res.data?.url, res.data?.poster);
-        } catch {
-          ElMessage.error('视频上传失败，请重试');
+          notification.success();
+        } catch (error) {
+          notification.fail(error);
         }
       }
     }

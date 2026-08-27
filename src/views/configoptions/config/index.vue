@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import type { FormInstance, FormRules } from 'element-plus';
+import type { FormInstance, FormRules, UploadRequestOptions } from 'element-plus';
 import { PERMISSION_CODES } from '@/constants/auth';
 import { fetchConfigs, saveConfigs } from '@/service/api/config';
 import { uploadImage } from '@/service/api/post';
 import { useAuth } from '@/hooks/business/auth';
+import { createUploadNotification } from '@/utils/upload-notification';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
 const { hasAuth } = useAuth();
@@ -93,16 +94,27 @@ const handleReset = () => {
 };
 
 // 图片上传处理
-const handleCustomUpload = async (key: string, options: any) => {
-  const { file, onSuccess, onError } = options;
+const handleCustomUpload = async (key: string, options: UploadRequestOptions) => {
+  const { file, onProgress, onSuccess, onError } = options;
+  const notification = createUploadNotification('正在上传图片');
   try {
-    const res = await uploadImage(file);
+    const res = await uploadImage(file, event => {
+      notification.update(event);
+      if (event.total) {
+        onProgress?.({
+          ...event,
+          percent: (event.loaded / event.total) * 100
+        } as unknown as Parameters<NonNullable<typeof onProgress>>[0]);
+      }
+    });
+    if (res.error) throw res.error;
     formData[key] = res.data?.url || '';
     onSuccess(res);
+    notification.success();
     ElMessage.success('上传成功');
   } catch (error) {
-    onError(error);
-    ElMessage.error('上传失败');
+    notification.fail(error);
+    onError(error as Parameters<typeof onError>[0]);
   }
 };
 

@@ -1,4 +1,5 @@
 // src/service/api/post.ts
+import type { AxiosProgressEvent } from 'axios';
 import { request } from '../request';
 
 /**
@@ -114,7 +115,7 @@ export function setPostEssence(id: string, essence: Api.Post.EssenceStatus) {
  * 上传图片
  * @param file 图片文件
  */
-export function uploadImage(file: File) {
+export function uploadImage(file: File, onUploadProgress?: (event: AxiosProgressEvent) => void) {
   const formData = new FormData();
   formData.append('file', file);
   return request<Api.Post.ImageUploadResponse>({
@@ -123,7 +124,8 @@ export function uploadImage(file: File) {
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data'
-    }
+    },
+    onUploadProgress
   });
 }
 
@@ -131,7 +133,7 @@ export function uploadImage(file: File) {
  * 上传视频
  * @param file 视频文件
  */
-export function uploadVideo(file: File) {
+export function uploadVideo(file: File, onUploadProgress?: (event: AxiosProgressEvent) => void) {
   const formData = new FormData();
   formData.append('file', file);
   return request<Api.Post.VideoUploadResponse>({
@@ -140,6 +142,7 @@ export function uploadVideo(file: File) {
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data'
-    }
+    },
+    onUploadProgress
   });
 }
